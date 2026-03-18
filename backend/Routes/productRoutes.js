@@ -55,10 +55,37 @@ router.get("/vendor", ensureAuthenticated, async (req, res) => {
   }
 });
 
+// 📊 Get current vendor's stats
+router.get("/vendor/stats", ensureAuthenticated, async (req, res) => {
+  try {
+    const products = await Product.find({ vendor: req.user._id });
+
+    const stats = products.reduce((acc, curr) => {
+      acc.totalViews += (curr.views || 0);
+      acc.wishlistSaves += (curr.wishlistCount || 0);
+      return acc;
+    }, { totalViews: 0, wishlistSaves: 0 });
+
+    res.json({
+      activeListings: products.length,
+      totalViews: stats.totalViews,
+      wishlistSaves: stats.wishlistSaves,
+      messages: 0 // Placeholder until messaging is implemented
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error fetching vendor stats" });
+  }
+});
+
 // 📋 Get a single product by ID
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate('vendor', 'name email');
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    ).populate('vendor', 'name email');
+
     if (!product) {
       return res.status(404).json({ message: "Product not found", success: false });
     }
@@ -148,7 +175,7 @@ router.get("/", async (req, res) => {
   try {
     const { minPrice, maxPrice, condition, category } = req.query;
 
-    let filter = { status: 'active' };
+    let filter = { $or: [{ status: 'active' }, { status: { $exists: false } }] };
 
     // Price filter
     if (minPrice || maxPrice) {
@@ -174,5 +201,74 @@ router.get("/", async (req, res) => {
   }
 });
 
+const UserModel = require("../Models/user");
+
+// ❤️ Toggle wishlist (add/remove)
+router.post("/wishlist/:id", ensureAuthenticated, async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id);
+    const productId = req.params.id;
+    const index = user.wishlist.indexOf(productId);
+
+    if (index > -1) {
+      user.wishlist.splice(index, 1);
+      await user.save();
+      res.json({ message: "Removed from wishlist", wishlisted: false });
+    } else {
+      user.wishlist.push(productId);
+      await user.save();
+      res.json({ message: "Added to wishlist", wishlisted: true });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ❤️ Get wishlist
+router.get("/wishlist", ensureAuthenticated, async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id).populate({
+      path: 'wishlist',
+      populate: { path: 'vendor', select: 'name isVendorApproved' }
+    });
+    res.json(user.wishlist || []);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// 🛒 Toggle cart (add/remove)
+router.post("/cart/:id", ensureAuthenticated, async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id);
+    const productId = req.params.id;
+    const index = user.cart.indexOf(productId);
+
+    if (index > -1) {
+      user.cart.splice(index, 1);
+      await user.save();
+      res.json({ message: "Removed from cart", inCart: false });
+    } else {
+      user.cart.push(productId);
+      await user.save();
+      res.json({ message: "Added to cart", inCart: true });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// 🛒 Get cart
+router.get("/cart", ensureAuthenticated, async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id).populate({
+      path: 'cart',
+      populate: { path: 'vendor', select: 'name isVendorApproved' }
+    });
+    res.json(user.cart || []);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;

@@ -46,7 +46,15 @@ const userSchema = new Schema({
   image: {
     type: String,
     default: ""
-  }
+  },
+  cart: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
+  wishlist: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }]
 }, { timestamps: true })
 
 const UserModel = mongoose.model('User', userSchema)

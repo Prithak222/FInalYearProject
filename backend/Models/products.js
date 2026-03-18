@@ -20,6 +20,14 @@ const productSchema = new mongoose.Schema({
         enum: ['active', 'sold', 'pending'],
         default: 'active'
     },
+    views: {
+        type: Number,
+        default: 0
+    },
+    wishlistCount: {
+        type: Number,
+        default: 0
+    },
     createdAt: {
         type: Date,
         default: Date.now
