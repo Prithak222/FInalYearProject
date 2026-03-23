@@ -84,7 +84,7 @@ router.get("/:id", async (req, res) => {
       req.params.id,
       { $inc: { views: 1 } },
       { new: true }
-    ).populate('vendor', 'name email');
+    ).populate('vendor', 'name email shopName shopLogo shopDescription');
 
     if (!product) {
       return res.status(404).json({ message: "Product not found", success: false });
@@ -173,9 +173,14 @@ router.delete('/:id', ensureAuthenticated, vendorApprovedOnly, async (req, res) 
 // 🔍 Get all products with filters (Public)
 router.get("/", async (req, res) => {
   try {
-    const { minPrice, maxPrice, condition, category } = req.query;
+    const { minPrice, maxPrice, condition, category, vendor } = req.query;
 
     let filter = { $or: [{ status: 'active' }, { status: { $exists: false } }] };
+
+    // Vendor filter
+    if (vendor) {
+      filter.vendor = vendor;
+    }
 
     // Price filter
     if (minPrice || maxPrice) {
@@ -194,81 +199,13 @@ router.get("/", async (req, res) => {
       filter.category = { $in: category.split(",") };
     }
 
-    const products = await Product.find(filter).populate('vendor', 'name');
+    const products = await Product.find(filter).populate('vendor', 'name shopName shopLogo');
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-const UserModel = require("../Models/user");
-
-// ❤️ Toggle wishlist (add/remove)
-router.post("/wishlist/:id", ensureAuthenticated, async (req, res) => {
-  try {
-    const user = await UserModel.findById(req.user._id);
-    const productId = req.params.id;
-    const index = user.wishlist.indexOf(productId);
-
-    if (index > -1) {
-      user.wishlist.splice(index, 1);
-      await user.save();
-      res.json({ message: "Removed from wishlist", wishlisted: false });
-    } else {
-      user.wishlist.push(productId);
-      await user.save();
-      res.json({ message: "Added to wishlist", wishlisted: true });
-    }
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// ❤️ Get wishlist
-router.get("/wishlist", ensureAuthenticated, async (req, res) => {
-  try {
-    const user = await UserModel.findById(req.user._id).populate({
-      path: 'wishlist',
-      populate: { path: 'vendor', select: 'name isVendorApproved' }
-    });
-    res.json(user.wishlist || []);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// 🛒 Toggle cart (add/remove)
-router.post("/cart/:id", ensureAuthenticated, async (req, res) => {
-  try {
-    const user = await UserModel.findById(req.user._id);
-    const productId = req.params.id;
-    const index = user.cart.indexOf(productId);
-
-    if (index > -1) {
-      user.cart.splice(index, 1);
-      await user.save();
-      res.json({ message: "Removed from cart", inCart: false });
-    } else {
-      user.cart.push(productId);
-      await user.save();
-      res.json({ message: "Added to cart", inCart: true });
-    }
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// 🛒 Get cart
-router.get("/cart", ensureAuthenticated, async (req, res) => {
-  try {
-    const user = await UserModel.findById(req.user._id).populate({
-      path: 'cart',
-      populate: { path: 'vendor', select: 'name isVendorApproved' }
-    });
-    res.json(user.cart || []);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
 
 module.exports = router;
+

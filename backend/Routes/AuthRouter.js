@@ -32,8 +32,9 @@ router.get('/admin/vendors', adminOnly, getAllVendors);
 router.get('/admin/vendors/stats', adminOnly, getVendorStats);
 router.get('/admin/users', adminOnly, getAllUsers);
 router.get('/admin/users/stats', adminOnly, getUserStats);
-const { suspendUser, updateProfile } = require("../Controllers/AuthController");
+const { suspendUser, updateProfile, getPublicVendor } = require("../Controllers/AuthController");
 router.post('/admin/users/:id/suspend', adminOnly, suspendUser);
 router.put('/update-profile', ensureAuthenticated, updateProfile);
+router.get('/vendor/:id', getPublicVendor);
 
 module.exports = router;

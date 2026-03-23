@@ -19,6 +19,8 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use('/auth', AuthRouter);
 app.use("/api/products", require("./Routes/productRoutes"));
+app.use("/api/cart", require("./Routes/cartRoutes"));
+app.use("/api/wishlist", require("./Routes/wishlistRoutes"));
 
 
 app.listen(port, () => {

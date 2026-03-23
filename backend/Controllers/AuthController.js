@@ -299,14 +299,35 @@ const suspendUser = async (req, res) => {
   }
 };
 
+const getPublicVendor = async (req, res) => {
+  try {
+    const vendor = await UserModel.findById(req.params.id)
+      .select('name image shopName shopDescription shopLogo shopBanner shopSlug category businessHours returnPolicy createdAt');
+    
+    if (!vendor || vendor.role !== 'vendor') {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+    res.json(vendor);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const updateProfile = async (req, res) => {
   try {
-    const { name, phone, address, image } = req.body;
+    const fieldsToUpdate = [
+      'name', 'phone', 'address', 'image',
+      'shopName', 'shopDescription', 'shopLogo', 'shopBanner', 'shopSlug', 'category', 'businessHours', 'returnPolicy',
+      'bankName', 'accountHolder', 'accountNumber', 'routingNumber', 'payoutSchedule', 'payoutThreshold',
+      'notifNewOrderEmail', 'notifNewOrderPush', 'domesticShipping', 'internationalShipping'
+    ];
+
     const updateData = {};
-    if (name) updateData.name = name;
-    if (phone) updateData.phone = phone;
-    if (address) updateData.address = address;
-    if (image) updateData.image = image;
+    fieldsToUpdate.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
 
     const user = await UserModel.findByIdAndUpdate(
       req.user._id,
@@ -327,5 +348,5 @@ const updateProfile = async (req, res) => {
 
 module.exports = {
   signup,
-  login, vendorRegister, vendorLogin, adminLogin, getPendingVendors, approveVendor, declineVendor, getCurrentUser, getAdminStats, getAllVendors, getVendorStats, getAllUsers, getUserStats, suspendUser, updateProfile
+  login, vendorRegister, vendorLogin, adminLogin, getPendingVendors, approveVendor, declineVendor, getCurrentUser, getPublicVendor, getAdminStats, getAllVendors, getVendorStats, getAllUsers, getUserStats, suspendUser, updateProfile
 };
