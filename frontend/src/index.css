@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-foreground bg-background selection:bg-primary/20;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-tactile {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium 
+           transition-all duration-200 active:scale-95 shadow-tactile hover:shadow-premium-hover;
+  }
+  
+  .btn-primary {
+    @apply btn-tactile bg-primary text-primary-foreground hover:bg-primary-dark;
+  }
+  
+  .btn-secondary {
+    @apply btn-tactile bg-white text-foreground border border-border hover:bg-muted;
+  }
+
+  .card-human {
+    @apply bg-card border border-border rounded-xl transition-all duration-300 hover:shadow-premium-hover;
+  }
+}

@@ -1,0 +1,205 @@
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { Navbar } from './components/navbar'
+import { VendorNavbarWrapper } from './components/VendorNavBarWrapper'
+import { AdminNavbarWrapper } from './components/AdminNavbarWrapper'
+import { Home } from './pages/home'
+import { Login } from './pages/login'
+import { Register } from './pages/register'
+import { Categories } from './pages/categories'
+import { AuthProvider, useAuth } from './context/AuthContext'
+
+import { VendorLogin } from './pages/vendor/VendorLogin'
+import { VendorRegister } from './pages/vendor/VendorRegister'
+import { VendorDashboard } from './pages/vendor/VendorDashboard'
+import { VendorProducts } from './pages/vendor/VendorProducts'
+import { PostItem, PostItem as VendorPost } from './pages/vendor/VendorPost'
+import { VendorProfile } from './pages/vendor/VendorProfile'
+import { AdminDashboard } from './pages/admin/adminDashboard'
+import { Users } from './pages/admin/user'
+import { Vendors } from './pages/admin/vendor'
+import { Verification } from './pages/admin/verification'
+import { Profile } from './pages/Profile'
+import { ProductDetail } from './pages/ProductDetail'
+import { ShopDetail } from './pages/ShopDetail'
+import { Wishlist } from './pages/Wishlist'
+import { ToastProvider } from './context/ToastContext'
+
+import { Cart } from './pages/Cart'
+
+
+function NavbarWrapper() {
+  const { userRole } = useAuth()
+  const location = useLocation()
+  const path = location.pathname
+  const hideNavbarPaths = ['/login', '/register']
+
+  // Hide on auth paths OR when explicitly in a portal route
+  if (
+    hideNavbarPaths.includes(path) ||
+    path.startsWith('/vendor') ||
+    path.startsWith('/admin')
+  ) {
+    return null
+  }
+  return <Navbar />
+}
+
+import { Navigate, useLocation as useRouteLocation } from 'react-router-dom'
+
+function ProtectedRoute({ allowedRole, children }) {
+  const { isLoggedIn, userRole, loading } = useAuth()
+  const location = useRouteLocation()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!isLoggedIn) {
+    // Redirect to the appropriate login page, saving the attempted URL
+    const loginPath = allowedRole === 'vendor' ? '/vendor/login' : '/login'
+    return <Navigate to={loginPath} state={{ from: location }} replace />
+  }
+
+  if (allowedRole && userRole !== allowedRole) {
+    return <Navigate to="/" replace />
+  }
+
+
+  return children
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <NavbarWrapper />
+          <VendorNavbarWrapper /> {/* Vendor sidebar/navbar */}
+          <AdminNavbarWrapper />
+
+
+          <Routes>
+
+          {/* Customer routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/shop/:id" element={<ShopDetail />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <Wishlist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+
+
+          {/* Vendor routes */}
+          <Route path="/vendor/login" element={<VendorLogin />} />
+          <Route path="/vendor/register" element={<VendorRegister />} />
+          <Route
+            path="/vendor/dashboard"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor/products"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorProducts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor/post"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <PostItem />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor/profile"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor/edit/:id"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <PostItem />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vendors"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <Vendors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/verification"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <Verification />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
+  </AuthProvider>
+
+  )
+}
+
+export default App
