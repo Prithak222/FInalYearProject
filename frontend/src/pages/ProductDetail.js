@@ -184,7 +184,7 @@ export function ProductDetail() {
            <nav className="flex items-center space-x-2 text-sm font-bold text-slate-400">
               <Link to="/" className="hover:text-primary transition-colors">Marketplace</Link>
               <ChevronRightIcon className="w-4 h-4 text-slate-300" />
-              <Link to={`/categories?category=${product.category}`} className="hover:text-primary transition-colors">{product.category}</Link>
+              <Link to={`/categories?category=${product.category?._id || product.category}`} className="hover:text-primary transition-colors">{product.category?.name || product.category}</Link>
               <ChevronRightIcon className="w-4 h-4 text-slate-300" />
               <span className="text-slate-900 truncate max-w-[150px]">{product.title}</span>
            </nav>
@@ -210,7 +210,7 @@ export function ProductDetail() {
               {/* Badges Overlay */}
               <div className="absolute top-8 left-8 flex flex-col space-y-3">
                  <span className="px-5 py-2 bg-white/80 backdrop-blur-xl rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-primary border border-white/50 shadow-xl">
-                    {product.category}
+                    {product.category?.name || product.category}
                  </span>
                  <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-xl rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl">
                     {product.condition}

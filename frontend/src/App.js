@@ -14,10 +14,12 @@ import { VendorDashboard } from './pages/vendor/VendorDashboard'
 import { VendorProducts } from './pages/vendor/VendorProducts'
 import { PostItem, PostItem as VendorPost } from './pages/vendor/VendorPost'
 import { VendorProfile } from './pages/vendor/VendorProfile'
+import { default as VendorOrders } from './pages/vendor/VendorOrder'
 import { AdminDashboard } from './pages/admin/adminDashboard'
 import { Users } from './pages/admin/user'
 import { Vendors } from './pages/admin/vendor'
 import { Verification } from './pages/admin/verification'
+import Listings from './pages/admin/listing'
 import { Profile } from './pages/Profile'
 import { ProductDetail } from './pages/ProductDetail'
 import { ShopDetail } from './pages/ShopDetail'
@@ -25,6 +27,9 @@ import { Wishlist } from './pages/Wishlist'
 import { ToastProvider } from './context/ToastContext'
 
 import { Cart } from './pages/Cart'
+import { Checkout } from './pages/Checkout'
+import { OrderSuccess } from './pages/OrderSuccess'
+import { MyOrders } from './pages/MyOrders'
 
 
 function NavbarWrapper() {
@@ -115,6 +120,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/order-success"
+            element={
+              <ProtectedRoute>
+                <OrderSuccess />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute>
+                <MyOrders />
+              </ProtectedRoute>
+            }
+          />
 
 
           {/* Vendor routes */}
@@ -133,6 +162,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="vendor">
                 <VendorProducts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor/orders"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorOrders />
               </ProtectedRoute>
             }
           />
@@ -191,6 +228,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="admin">
                 <Verification />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/listings"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <Listings />
               </ProtectedRoute>
             }
           />

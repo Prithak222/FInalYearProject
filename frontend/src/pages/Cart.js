@@ -177,9 +177,9 @@ export function Cart() {
                     </div>
                   </div>
                 </div>
-                <button className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all active:scale-[0.98] shadow-lg shadow-primary/25">
+                <Link to="/checkout" className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all active:scale-[0.98] shadow-lg shadow-primary/25 inline-flex justify-center items-center">
                   Proceed to Checkout
-                </button>
+                </Link>
               </div>
             </div>
           </div>

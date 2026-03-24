@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   UserIcon,
@@ -182,7 +183,9 @@ export function Profile() {
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-                  <StatCard icon={<ShoppingBagIcon className="w-4 h-4 text-indigo-500" />} label="Orders" value="0" />
+                  <Link to="/my-orders" className="block w-full">
+                    <StatCard icon={<ShoppingBagIcon className="w-4 h-4 text-indigo-500" />} label="Orders" value="View All" />
+                  </Link>
                   <StatCard icon={<HeartIcon className="w-4 h-4 text-rose-500" />} label="Wishlist" value="0" />
                   <StatCard icon={<ShieldCheckIcon className="w-4 h-4 text-emerald-500" />} label="Status" value="Verified" />
                   <StatCard icon={<CalendarIcon className="w-4 h-4 text-amber-500" />} label="Year" value={new Date(user.createdAt).getFullYear()} />

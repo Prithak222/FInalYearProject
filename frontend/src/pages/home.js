@@ -5,11 +5,19 @@ import {
   TrendingUpIcon,
   ShieldCheckIcon,
   LeafIcon,
+  Smartphone,
+  Armchair,
+  Shirt,
+  Book,
+  Bike,
+  Home as HomeIcon,
+  Gamepad2,
+  Package,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { SearchBar } from '../components/SearchBar'
 import { ProductCard } from '../components/ProductCard'
-import { mockProducts, categories } from '../data/mockData'
+import { mockProducts } from '../data/mockData' // Removed mock categories import
 
 export function Home() {
   const { isLoggedIn, userRole } = useAuth()
@@ -27,20 +35,43 @@ export function Home() {
   }
 
   const [products, setProducts] = useState([])
+  const [dbCategories, setDbCategories] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // 📋 Fetch products
     fetch('http://localhost:3000/api/products')
       .then(res => res.json())
       .then(data => {
         setProducts(Array.isArray(data) ? data.slice(0, 6) : [])
+      })
+      .catch(err => console.error('Error fetching home products', err))
+
+    // 📋 Fetch categories
+    fetch('http://localhost:3000/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setDbCategories(data.slice(0, 8)) // Show top 8
+        }
         setLoading(false)
       })
       .catch(err => {
-        console.error('Error fetching home products', err)
+        console.error('Error fetching home categories', err)
         setLoading(false)
       })
   }, [])
+
+  const IconMap = {
+    Smartphone: <Smartphone className="w-6 h-6" />,
+    Armchair: <Armchair className="w-6 h-6" />,
+    Shirt: <Shirt className="w-6 h-6" />,
+    Book: <Book className="w-6 h-6" />,
+    Bike: <Bike className="w-6 h-6" />,
+    Home: <HomeIcon className="w-6 h-6" />,
+    Gamepad2: <Gamepad2 className="w-6 h-6" />,
+    Package: <Package className="w-6 h-6" />,
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-12">
@@ -123,20 +154,22 @@ export function Home() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-5">
-          {categories.map((category) => (
+          {dbCategories.map((category) => (
             <Link
-              key={category.id}
-              to={`/categories?category=${category.id}`}
+              key={category._id}
+              to={`/categories?category=${category._id}`}
               className="flex flex-col items-center p-5 bg-white rounded-2xl border border-slate-100 hover:border-primary/30 hover:shadow-premium-hover transition-all group scale-100 hover:scale-[1.02]"
             >
               <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mb-3 group-hover:bg-primary/5 transition-colors">
-                <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">📦</span>
+                <span className="text-primary grayscale group-hover:grayscale-0 transition-all">
+                  {IconMap[category.icon] || <Package className="w-6 h-6" />}
+                </span>
               </div>
               <span className="text-sm font-bold text-foreground text-center line-clamp-1">
                 {category.name}
               </span>
               <span className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mt-1.5 opacity-60">
-                {category.count}+
+                Browse
               </span>
             </Link>
           ))}

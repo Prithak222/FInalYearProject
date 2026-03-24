@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../Models/products");
 
-const { ensureAuthenticated, vendorApprovedOnly } = require('../Middlewares/AuthValidation');
+const { ensureAuthenticated, vendorApprovedOnly, adminOnly } = require('../Middlewares/AuthValidation');
 
 // ➕ Add a new product (Vendor only)
 router.post('/', ensureAuthenticated, vendorApprovedOnly, async (req, res) => {
@@ -48,7 +48,7 @@ router.post('/', ensureAuthenticated, vendorApprovedOnly, async (req, res) => {
 // 📋 Get current vendor's products
 router.get("/vendor", ensureAuthenticated, async (req, res) => {
   try {
-    const products = await Product.find({ vendor: req.user._id }).sort({ createdAt: -1 });
+    const products = await Product.find({ vendor: req.user._id }).populate('category', 'name icon').sort({ createdAt: -1 });
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: "Server error fetching vendor products" });
@@ -84,7 +84,7 @@ router.get("/:id", async (req, res) => {
       req.params.id,
       { $inc: { views: 1 } },
       { new: true }
-    ).populate('vendor', 'name email shopName shopLogo shopDescription');
+    ).populate('vendor', 'name email shopName shopLogo shopDescription').populate('category', 'name icon');
 
     if (!product) {
       return res.status(404).json({ message: "Product not found", success: false });
@@ -199,13 +199,47 @@ router.get("/", async (req, res) => {
       filter.category = { $in: category.split(",") };
     }
 
-    const products = await Product.find(filter).populate('vendor', 'name shopName shopLogo');
+    const products = await Product.find(filter).populate('vendor', 'name shopName shopLogo').populate('category', 'name icon');
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
+
+// 📋 Get all products (Admin only)
+router.get("/admin/all", adminOnly, async (req, res) => {
+  try {
+    const products = await Product.find().populate('vendor', 'name shopName email').populate('category', 'name icon').sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Server error fetching all products" });
+  }
+});
+
+// 🛡️ Update product status (Admin only)
+router.put("/admin/status/:id", adminOnly, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['active', 'pending', 'sold', 'flagged'].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json({ message: `Product status updated to ${status}`, product, success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error updating product status" });
+  }
+});
 
 module.exports = router;
 

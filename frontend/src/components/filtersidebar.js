@@ -2,20 +2,23 @@ import React, { useState } from 'react'
 import { XIcon } from 'lucide-react'
 
 export function FilterSidebar({ isOpen = true, onClose, onApply }) {
+  const conditions = ['New', 'Like New', 'Good', 'Fair']
   const [priceRange, setPriceRange] = useState([0, 100000])
   const [selectedConditions, setSelectedConditions] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
 
-  const conditions = ['New', 'Like New', 'Good', 'Fair']
-  const categories = [
-    'electronics',
-    'furniture',
-    'fashion',
-    'books',
-    'sports',
-    'home',
-    'toys',
-  ]
+  const [dbCategories, setDbCategories] = useState([])
+
+  React.useEffect(() => {
+    fetch('http://localhost:3000/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setDbCategories(data)
+        }
+      })
+      .catch(err => console.error('Error fetching categories in filter sidebar', err))
+  }, [])
 
   const toggleCondition = (condition) => {
     setSelectedConditions((prev) =>
@@ -122,14 +125,15 @@ export function FilterSidebar({ isOpen = true, onClose, onApply }) {
       {/* Categories */}
       <div className="mb-6">
         <h4 className="text-sm font-semibold mb-3">Categories</h4>
-        {categories.map((category) => (
-          <label key={category} className="flex items-center gap-2">
+        {dbCategories.map((category) => (
+          <label key={category._id} className="flex items-center gap-2 mb-1.5 cursor-pointer group">
             <input
               type="checkbox"
-              checked={selectedCategories.includes(category)}
-              onChange={() => toggleCategory(category)}
+              checked={selectedCategories.includes(category._id)}
+              onChange={() => toggleCategory(category._id)}
+              className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4"
             />
-            <span>{category}</span>
+            <span className="text-sm text-slate-600 group-hover:text-primary transition-colors">{category.name}</span>
           </label>
         ))}
       </div>

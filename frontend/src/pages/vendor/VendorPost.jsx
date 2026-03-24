@@ -23,7 +23,7 @@ import {
   Camera,
   X
 } from 'lucide-react'
-import { categories } from '../../data/mockData'
+// import { categories } from '../../data/mockData' // Removed mock data
 
 // Helper to map icon string to Component
 const IconMap = {
@@ -45,6 +45,7 @@ export function PostItem() {
   const [step, setStep] = useState(1)
   const [isPublishing, setIsPublishing] = useState(false)
   const [isLoading, setIsLoading] = useState(isEditMode)
+  const [dbCategories, setDbCategories] = useState([])
 
   const [formData, setFormData] = useState({
     title: '',
@@ -91,6 +92,20 @@ export function PostItem() {
       }
       fetchProduct()
     }
+
+    // 📋 Fetch categories from backend
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/categories')
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          setDbCategories(data)
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err)
+      }
+    }
+    fetchCategories()
   }, [isEditMode, productId])
 
   const conditions = [
@@ -263,21 +278,21 @@ export function PostItem() {
                       <p className="text-slate-500 font-medium">Select the best category for your item to reach more buyers.</p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {categories.map((cat) => (
+                      {dbCategories.map((cat) => (
                         <button
-                          key={cat.id}
+                          key={cat._id}
                           type="button"
-                          onClick={() => handleCategorySelect(cat.id)}
-                          className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all group ${formData.category === cat.id
+                          onClick={() => handleCategorySelect(cat._id)}
+                          className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all group ${formData.category === cat._id
                             ? 'border-primary bg-primary/5 shadow-md shadow-primary/10'
                             : 'border-slate-100 hover:border-primary/40 hover:bg-slate-50'
                             }`}
                         >
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${formData.category === cat.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary'
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${formData.category === cat._id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary'
                             }`}>
                             {IconMap[cat.icon] || <Package className="w-6 h-6" />}
                           </div>
-                          <span className={`text-sm font-bold tracking-tight ${formData.category === cat.id ? 'text-primary' : 'text-slate-600'}`}>
+                          <span className={`text-sm font-bold tracking-tight ${formData.category === cat._id ? 'text-primary' : 'text-slate-600'}`}>
                             {cat.name}
                           </span>
                         </button>
@@ -560,7 +575,7 @@ export function PostItem() {
                 <div className="p-8">
                   <div className="mb-4">
                     <div className="text-[10px] font-black text-primary uppercase tracking-[0.15em] mb-1">
-                      {categories.find(c => c.id === formData.category)?.name || 'Category'}
+                      {dbCategories.find(c => c._id === formData.category)?.name || 'Category'}
                     </div>
                     <h3 className="text-xl font-black text-slate-900 line-clamp-2 leading-tight">
                       {formData.title || 'Untitled Listing'}

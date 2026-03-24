@@ -144,7 +144,7 @@ export function VendorProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] p-4 md:p-8">
+    <div className="min-h-screen bg-[#fafbfc] p-4 md:p-8 md:ml-64">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
