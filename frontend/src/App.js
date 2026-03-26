@@ -7,8 +7,10 @@ import { Login } from './pages/login'
 import { Register } from './pages/register'
 import { Categories } from './pages/categories'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ForgotPassword } from './pages/ForgotPassword'
 
 import { VendorLogin } from './pages/vendor/VendorLogin'
+import { VendorForgotPassword } from './pages/vendor/VendorForgotPassword'
 import { VendorRegister } from './pages/vendor/VendorRegister'
 import { VendorDashboard } from './pages/vendor/VendorDashboard'
 import { VendorProducts } from './pages/vendor/VendorProducts'
@@ -36,7 +38,7 @@ function NavbarWrapper() {
   const { userRole } = useAuth()
   const location = useLocation()
   const path = location.pathname
-  const hideNavbarPaths = ['/login', '/register']
+  const hideNavbarPaths = ['/login', '/register', '/forgot-password', '/vendor/forgot-password', '/vendor/login', '/vendor/register']
 
   // Hide on auth paths OR when explicitly in a portal route
   if (
@@ -93,6 +95,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/shop/:id" element={<ShopDetail />} />
@@ -149,6 +152,7 @@ function App() {
           {/* Vendor routes */}
           <Route path="/vendor/login" element={<VendorLogin />} />
           <Route path="/vendor/register" element={<VendorRegister />} />
+          <Route path="/vendor/forgot-password" element={<VendorForgotPassword />} />
           <Route
             path="/vendor/dashboard"
             element={

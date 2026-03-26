@@ -71,6 +71,9 @@ const userSchema = new Schema({
   notifNewOrderPush: { type: Boolean, default: true },
   domesticShipping: { type: Boolean, default: true },
   internationalShipping: { type: Boolean, default: false },
+  
+  resetOTP: { type: String },
+  resetOTPExpires: { type: Date },
 
 }, { timestamps: true })
 

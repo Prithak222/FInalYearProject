@@ -37,4 +37,9 @@ router.post('/admin/users/:id/suspend', adminOnly, suspendUser);
 router.put('/update-profile', ensureAuthenticated, updateProfile);
 router.get('/vendor/:id', getPublicVendor);
 
+const { forgotPassword, verifyOTP, resetPassword } = require("../Controllers/AuthController");
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
+
 module.exports = router;

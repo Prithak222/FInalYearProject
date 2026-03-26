@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../Models/user");
+const crypto = require("crypto");
+const transporter = require("../Utils/emailConfig");
 
 const signup = async (req, res) => {
   try {
@@ -346,7 +348,116 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = Date.now() + 600000; // 10 minutes
+
+    user.resetOTP = otp;
+    user.resetOTPExpires = otpExpires;
+    await user.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Your OTP for Password Reset - DosroDeal",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #333; text-align: center;">DosroDeal Password Reset</h2>
+          <p>Hi ${user.name},</p>
+          <p>Your One-Time Password (OTP) for resetting your password is:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #000; padding: 10px 20px; border: 1px dashed #ccc; border-radius: 5px;">${otp}</span>
+          </div>
+          <p>This OTP is valid for 10 minutes. Please do not share this code with anyone.</p>
+          <p>If you did not request this, please ignore this email.</p>
+          <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+          <p style="font-size: 12px; color: #888; text-align: center;">&copy; 2026 DosroDeal. All rights reserved.</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "OTP sent to your email", success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error", success: false });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await UserModel.findOne({
+      email,
+      resetOTP: otp,
+      resetOTPExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired OTP", success: false });
+    }
+
+    res.status(200).json({ message: "OTP verified successfully", success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error", success: false });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    const user = await UserModel.findOne({
+      email,
+      resetOTP: otp,
+      resetOTPExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired OTP", success: false });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetOTP = undefined;
+    user.resetOTPExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully", success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error", success: false });
+  }
+};
+
 module.exports = {
   signup,
-  login, vendorRegister, vendorLogin, adminLogin, getPendingVendors, approveVendor, declineVendor, getCurrentUser, getPublicVendor, getAdminStats, getAllVendors, getVendorStats, getAllUsers, getUserStats, suspendUser, updateProfile
+  login,
+  vendorRegister,
+  vendorLogin,
+  adminLogin,
+  getPendingVendors,
+  approveVendor,
+  declineVendor,
+  getCurrentUser,
+  getPublicVendor,
+  getAdminStats,
+  getAllVendors,
+  getVendorStats,
+  getAllUsers,
+  getUserStats,
+  suspendUser,
+  updateProfile,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
 };
