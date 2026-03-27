@@ -40,7 +40,7 @@ export function Home() {
 
   useEffect(() => {
     // 📋 Fetch products
-    fetch('http://localhost:3000/api/products')
+    fetch('http://localhost:5000/api/products')
       .then(res => res.json())
       .then(data => {
         setProducts(Array.isArray(data) ? data.slice(0, 6) : [])
@@ -48,7 +48,7 @@ export function Home() {
       .catch(err => console.error('Error fetching home products', err))
 
     // 📋 Fetch categories
-    fetch('http://localhost:3000/api/categories')
+    fetch('http://localhost:5000/api/categories')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

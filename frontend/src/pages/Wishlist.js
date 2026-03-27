@@ -14,7 +14,7 @@ export function Wishlist() {
       return
     }
     const token = sessionStorage.getItem('token')
-    fetch('http://localhost:3000/api/wishlist', {
+    fetch('http://localhost:5000/api/wishlist', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -28,7 +28,7 @@ export function Wishlist() {
   const handleRemove = async (productId) => {
     const token = sessionStorage.getItem('token')
     try {
-      await fetch(`http://localhost:3000/api/wishlist/remove/${productId}`, {
+      await fetch(`http://localhost:5000/api/wishlist/remove/${productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })

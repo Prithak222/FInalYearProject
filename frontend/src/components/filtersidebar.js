@@ -10,7 +10,7 @@ export function FilterSidebar({ isOpen = true, onClose, onApply }) {
   const [dbCategories, setDbCategories] = useState([])
 
   React.useEffect(() => {
-    fetch('http://localhost:3000/api/categories')
+    fetch('http://localhost:5000/api/categories')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

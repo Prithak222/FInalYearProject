@@ -44,7 +44,7 @@ export function VendorRegister() {
 
     try {
       await axios.post(
-        'http://localhost:3000/auth/vendor/register',
+        'http://localhost:5000/auth/vendor/register',
         {
           shopName: formData.shopName,
           name: formData.ownerName,

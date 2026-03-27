@@ -16,7 +16,7 @@ export function Cart() {
   const fetchCart = async () => {
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:3000/api/cart', {
+      const res = await fetch('http://localhost:5000/api/cart', {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
@@ -39,7 +39,7 @@ export function Cart() {
   const handleRemove = async (productId) => {
     const token = sessionStorage.getItem('token')
     try {
-      await fetch(`http://localhost:3000/api/cart/remove/${productId}`, {
+      await fetch(`http://localhost:5000/api/cart/remove/${productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -55,7 +55,7 @@ export function Cart() {
     if (newQty < 1) return
     const token = sessionStorage.getItem('token')
     try {
-      await fetch(`http://localhost:3000/api/cart/update`, {
+      await fetch(`http://localhost:5000/api/cart/update`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

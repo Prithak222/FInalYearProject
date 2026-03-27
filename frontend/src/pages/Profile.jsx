@@ -58,7 +58,7 @@ export function Profile() {
     setLoading(true)
     setMessage({ type: '', text: '' })
     try {
-      const res = await fetch('http://localhost:3000/auth/update-profile', {
+      const res = await fetch('http://localhost:5000/auth/update-profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -46,6 +46,13 @@ const orderSchema = new Schema({
         type: String,
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
         default: 'Pending'
+    },
+    transactionUuid: {
+        type: String,
+        unique: true
+    },
+    esewaTransactionCode: {
+        type: String
     }
 }, { timestamps: true });
 

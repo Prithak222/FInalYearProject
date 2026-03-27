@@ -16,7 +16,7 @@ export function ShopDetail() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const API_BASE = 'http://localhost:3000'
+  const API_BASE = 'http://localhost:5000'
 
   useEffect(() => {
     const fetchShopData = async () => {

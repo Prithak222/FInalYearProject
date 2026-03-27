@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
       return
     }
     try {
-      const res = await fetch('http://localhost:3000/api/cart', {
+      const res = await fetch('http://localhost:5000/api/cart', {
         headers: { Authorization: `Bearer ${user.token}` }
       })
       const data = await res.json()
@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch('http://localhost:3000/auth/me', {
+        const res = await fetch('http://localhost:5000/auth/me', {
           headers: { Authorization: `Bearer ${user.token}` }
         })
 

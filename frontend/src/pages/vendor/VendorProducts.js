@@ -11,7 +11,7 @@ export function VendorProducts() {
         const fetchProducts = async () => {
             const token = sessionStorage.getItem('token')
             try {
-                const res = await fetch('http://localhost:3000/api/products/vendor', {
+                const res = await fetch('http://localhost:5000/api/products/vendor', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -40,7 +40,7 @@ export function VendorProducts() {
 
         const token = sessionStorage.getItem('token')
         try {
-            const res = await fetch(`http://localhost:3000/api/products/${productId}`, {
+            const res = await fetch(`http://localhost:5000/api/products/${productId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

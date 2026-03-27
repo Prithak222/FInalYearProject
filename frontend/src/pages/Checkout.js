@@ -30,7 +30,7 @@ export function Checkout() {
   const fetchCart = async () => {
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:3000/api/cart', {
+      const res = await fetch('http://localhost:5000/api/cart', {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
@@ -69,7 +69,8 @@ export function Checkout() {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/orders', {
+      // Call eSewa initialization endpoint
+      const res = await fetch('http://localhost:5000/api/payments/initialize-esewa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,11 +81,23 @@ export function Checkout() {
 
       const data = await res.json()
       if (data.success) {
-        showToast('Order placed successfully!', 'success')
-        refreshCartCount()
-        navigate('/order-success', { state: { orderId: data.order._id } })
+        // Create a hidden form and submit it to eSewa
+        const form = document.createElement('form');
+        form.setAttribute('method', 'POST');
+        form.setAttribute('action', data.gatewayUrl);
+
+        for (const key in data.esewaData) {
+          const hiddenField = document.createElement('input');
+          hiddenField.setAttribute('type', 'hidden');
+          hiddenField.setAttribute('name', key);
+          hiddenField.setAttribute('value', data.esewaData[key]);
+          form.appendChild(hiddenField);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
       } else {
-        showToast(data.message || 'Failed to place order', 'error')
+        showToast(data.message || 'Failed to initialize payment', 'error')
       }
     } catch (err) {
       console.error(err)
@@ -168,16 +181,22 @@ export function Checkout() {
                 </div>
               </section>
 
-              {/* Payment Method (Placeholder for now) */}
-              <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 opacity-60 pointer-events-none">
+              {/* Payment Method */}
+              <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
                     <CreditCard className="w-5 h-5 text-amber-600" />
                   </div>
                   <h2 className="text-xl font-bold text-slate-800">Payment Method</h2>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-center">
-                  <p className="text-slate-500 font-medium">Cash on Delivery (Default)</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <label className="flex items-center p-4 bg-slate-50 rounded-xl border border-primary/20 cursor-pointer hover:bg-slate-100 transition-all">
+                    <input type="radio" name="paymentMethod" value="esewa" checked readOnly className="w-5 h-5 text-primary focus:ring-primary" />
+                    <div className="ml-4 flex items-center">
+                      <img src="https://esewa.com.np/common/images/esewa-logo.png" alt="eSewa" className="h-8 mr-2" />
+                      <span className="font-bold text-slate-800">eSewa Mobile Wallet</span>
+                    </div>
+                  </label>
                 </div>
               </section>
 
@@ -191,7 +210,7 @@ export function Checkout() {
                 ) : (
                   <>
                     <ShieldCheck className="w-5 h-5" />
-                    <span>Place Order (Rs. {totalPrice})</span>
+                    <span>Pay with eSewa (Rs. {totalPrice})</span>
                   </>
                 )}
               </button>

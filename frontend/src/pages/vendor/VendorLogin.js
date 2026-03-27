@@ -33,7 +33,7 @@ export function VendorLogin() {
 
     try {
       const res = await axios.post(
-        'http://localhost:3000/auth/vendor/login',
+        'http://localhost:5000/auth/vendor/login',
         formData
       )
 

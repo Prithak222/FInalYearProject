@@ -23,7 +23,7 @@ export function Vendors() {
     if (!token) return
 
     // 📊 Fetch Stats
-    fetch('http://localhost:3000/auth/admin/vendors/stats', {
+    fetch('http://localhost:5000/auth/admin/vendors/stats', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -31,7 +31,7 @@ export function Vendors() {
       .catch(err => console.error(err))
 
     // 📦 Fetch All Vendors
-    fetch('http://localhost:3000/auth/admin/vendors', {
+    fetch('http://localhost:5000/auth/admin/vendors', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())

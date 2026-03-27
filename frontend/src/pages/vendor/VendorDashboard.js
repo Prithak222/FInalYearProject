@@ -27,7 +27,7 @@ export function VendorDashboard() {
       const token = sessionStorage.getItem('token')
       if (!token) return;
       try {
-        const res = await fetch('http://localhost:3000/auth/me', {
+        const res = await fetch('http://localhost:5000/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (res.ok) {
@@ -46,7 +46,7 @@ export function VendorDashboard() {
       if (!token) return;
       try {
         // Fetch stats
-        const statsRes = await fetch('http://localhost:3000/api/products/vendor/stats', {
+        const statsRes = await fetch('http://localhost:5000/api/products/vendor/stats', {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (statsRes.ok) {
@@ -55,7 +55,7 @@ export function VendorDashboard() {
         }
 
         // Fetch products
-        const productsRes = await fetch('http://localhost:3000/api/products/vendor', {
+        const productsRes = await fetch('http://localhost:5000/api/products/vendor', {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (productsRes.ok) {

@@ -34,7 +34,7 @@ export function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0)
 
   // API Configuration
-  const API_BASE = 'http://localhost:3000/api'
+  const API_BASE = 'http://localhost:5000/api'
 
   useEffect(() => {
     const fetchProduct = async () => {

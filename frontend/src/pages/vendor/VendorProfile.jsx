@@ -72,7 +72,7 @@ export function VendorProfile() {
   })
 
   // API Configuration
-  const AUTH_BASE = 'http://localhost:3000/auth'
+  const AUTH_BASE = 'http://localhost:5000/auth'
 
   const [isInitialized, setIsInitialized] = useState(false)
 
@@ -497,4 +497,4 @@ export function VendorProfile() {
       </div>
     </div>
   )
-}
+}

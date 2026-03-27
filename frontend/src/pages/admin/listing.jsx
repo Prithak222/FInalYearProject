@@ -24,7 +24,7 @@ export default function Listings() {
   const fetchListings = async () => {
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:3000/api/products/admin/all', {
+      const res = await fetch('http://localhost:5000/api/products/admin/all', {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
@@ -41,7 +41,7 @@ export default function Listings() {
   const handleUpdateStatus = async (id, newStatus) => {
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch(`http://localhost:3000/api/products/admin/status/${id}`, {
+      const res = await fetch(`http://localhost:5000/api/products/admin/status/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -23,6 +23,7 @@ app.use("/api/cart", require("./Routes/cartRoutes"));
 app.use("/api/wishlist", require("./Routes/wishlistRoutes"));
 app.use("/api/orders", require("./Routes/orderRoutes"));
 app.use("/api/categories", require("./Routes/categoryRoutes"));
+app.use("/api/payments", require("./Routes/paymentRoutes"));
 
 
 app.listen(port, () => {

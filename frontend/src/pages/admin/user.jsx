@@ -23,10 +23,10 @@ export function Users() {
 
     try {
       const [statsRes, usersRes] = await Promise.all([
-        fetch('http://localhost:3000/auth/admin/users/stats', {
+        fetch('http://localhost:5000/auth/admin/users/stats', {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch('http://localhost:3000/auth/admin/users', {
+        fetch('http://localhost:5000/auth/admin/users', {
           headers: { Authorization: `Bearer ${token}` }
         })
       ])
@@ -52,7 +52,7 @@ export function Users() {
     if (!window.confirm("Suspend this user for 24 hours?")) return
 
     try {
-      const res = await fetch(`http://localhost:3000/auth/admin/users/${userId}/suspend`, {
+      const res = await fetch(`http://localhost:5000/auth/admin/users/${userId}/suspend`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       })

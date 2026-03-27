@@ -44,7 +44,7 @@ export function Categories() {
     if (condition.length > 0) query.set('condition', condition.join(','))
     if (category.length > 0) query.set('category', category.join(','))
 
-    fetch(`http://localhost:3000/api/products?${query.toString()}`)
+    fetch(`http://localhost:5000/api/products?${query.toString()}`)
       .then(res => res.json())
       .then(data => {
         setProducts(Array.isArray(data) ? data : [])

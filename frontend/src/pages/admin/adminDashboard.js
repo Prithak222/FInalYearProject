@@ -25,7 +25,7 @@ export function AdminDashboard() {
     if (!token) return
 
     // 📊 Fetch stats
-    fetch('http://localhost:3000/auth/admin/stats', {
+    fetch('http://localhost:5000/auth/admin/stats', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -39,7 +39,7 @@ export function AdminDashboard() {
       })
 
     // 📦 Fetch pending vendors
-    fetch('http://localhost:3000/auth/admin/vendors/pending', {
+    fetch('http://localhost:5000/auth/admin/vendors/pending', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -50,14 +50,14 @@ export function AdminDashboard() {
   const handleApprove = async (vendorId) => {
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch(`http://localhost:3000/auth/admin/vendors/${vendorId}/approve`, {
+      const res = await fetch(`http://localhost:5000/auth/admin/vendors/${vendorId}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {
         setPendingVendors(pendingVendors.filter((v) => v._id !== vendorId))
         // Refresh stats after approval
-        const statsRes = await fetch('http://localhost:3000/auth/admin/stats', {
+        const statsRes = await fetch('http://localhost:5000/auth/admin/stats', {
           headers: { Authorization: `Bearer ${token}` },
         })
         const statsData = await statsRes.json()
@@ -75,7 +75,7 @@ export function AdminDashboard() {
     if (!window.confirm("Are you sure you want to decline and remove this vendor?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/auth/admin/vendors/${vendorId}/decline`, {
+      const res = await fetch(`http://localhost:5000/auth/admin/vendors/${vendorId}/decline`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

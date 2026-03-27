@@ -20,7 +20,7 @@ export function Verification() {
   const fetchRequests = async () => {
     const token = sessionStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/auth/admin/vendors/pending', {
+      const res = await fetch('http://localhost:5000/auth/admin/vendors/pending', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -35,7 +35,7 @@ export function Verification() {
   const fetchStats = async () => {
     const token = sessionStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/auth/admin/vendors/stats', {
+      const res = await fetch('http://localhost:5000/auth/admin/vendors/stats', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -48,7 +48,7 @@ export function Verification() {
   const handleApprove = async (vendorId) => {
     const token = sessionStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/auth/admin/vendors/${vendorId}/approve`, {
+      const res = await fetch(`http://localhost:5000/auth/admin/vendors/${vendorId}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -68,7 +68,7 @@ export function Verification() {
     if (!window.confirm("Are you sure you want to decline and remove this vendor?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/auth/admin/vendors/${vendorId}/decline`, {
+      const res = await fetch(`http://localhost:5000/auth/admin/vendors/${vendorId}/decline`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

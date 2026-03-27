@@ -27,7 +27,7 @@ export default function VendorOrders() {
   const fetchOrders = async () => {
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:3000/api/orders/vendor-orders', {
+      const res = await fetch('http://localhost:5000/api/orders/vendor-orders', {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()

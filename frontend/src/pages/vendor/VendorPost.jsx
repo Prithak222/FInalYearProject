@@ -65,7 +65,7 @@ export function PostItem() {
     if (isEditMode) {
       const fetchProduct = async () => {
         try {
-          const res = await fetch(`http://localhost:3000/api/products/${productId}`)
+          const res = await fetch(`http://localhost:5000/api/products/${productId}`)
           if (res.ok) {
             const data = await res.json()
             setFormData({
@@ -96,7 +96,7 @@ export function PostItem() {
     // 📋 Fetch categories from backend
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/categories')
+        const res = await fetch('http://localhost:5000/api/categories')
         const data = await res.json()
         if (Array.isArray(data)) {
           setDbCategories(data)
@@ -175,8 +175,8 @@ export function PostItem() {
 
     try {
       const url = isEditMode
-        ? `http://localhost:3000/api/products/${productId}`
-        : 'http://localhost:3000/api/products'
+        ? `http://localhost:5000/api/products/${productId}`
+        : 'http://localhost:5000/api/products'
 
       const res = await fetch(url, {
         method: isEditMode ? 'PUT' : 'POST',
