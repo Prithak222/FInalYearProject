@@ -102,7 +102,7 @@ export function VendorProducts() {
                                     </div>
                                 </div>
                                 <div className="p-4">
-                                    <p className="text-[10px] font-bold text-primary uppercase mb-1">{product.category?.name || product.category}</p>
+                                    <p className="text-[10px] font-bold text-primary uppercase mb-1">{product.category?.name || (typeof product.category === 'string' ? product.category : 'Uncategorized')}</p>
                                     <h3 className="font-bold text-slate-900 truncate mb-2">{product.title}</h3>
                                     <div className="flex items-center justify-between mb-4">
                                         <span className="text-lg font-black text-slate-900">Rs. {product.price}</span>

@@ -7,6 +7,7 @@ import { Login } from './pages/login'
 import { Register } from './pages/register'
 import { Categories } from './pages/categories'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { SocketProvider } from './context/SocketContext'
 import { ForgotPassword } from './pages/ForgotPassword'
 
 import { VendorLogin } from './pages/vendor/VendorLogin'
@@ -32,6 +33,8 @@ import { Cart } from './pages/Cart'
 import { Checkout } from './pages/Checkout'
 import { OrderSuccess } from './pages/OrderSuccess'
 import { MyOrders } from './pages/MyOrders'
+import { Messages } from './pages/Messages'
+import { VendorChat } from './pages/vendor/VendorChat'
 
 
 function NavbarWrapper() {
@@ -82,7 +85,8 @@ function ProtectedRoute({ allowedRole, children }) {
 function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
+      <SocketProvider>
+        <ToastProvider>
         <BrowserRouter>
           <NavbarWrapper />
           <VendorNavbarWrapper /> {/* Vendor sidebar/navbar */}
@@ -147,6 +151,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
 
 
           {/* Vendor routes */}
@@ -201,6 +213,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/vendor/chat"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorChat />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin routes */}
           <Route
@@ -243,9 +263,10 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </BrowserRouter>
-    </ToastProvider>
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
+    </SocketProvider>
   </AuthProvider>
 
   )

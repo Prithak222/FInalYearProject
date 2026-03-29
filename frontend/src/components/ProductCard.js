@@ -89,7 +89,7 @@ export function ProductCard({
         <div className="mt-auto space-y-3">
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
              <span className="bg-muted px-2 py-0.5 rounded-full font-medium">
-              {product.category?.name || product.category}
+              {product.category?.name || (typeof product.category === 'string' ? product.category : 'Uncategorized')}
             </span>
             <span className="italic">
               {product.postedDate ? new Date(product.postedDate).toLocaleDateString() : 'Recently'}

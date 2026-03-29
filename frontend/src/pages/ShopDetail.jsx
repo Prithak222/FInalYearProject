@@ -104,7 +104,7 @@ export function ShopDetail() {
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-3 text-slate-500 font-medium">
                   {vendor.category && (
                     <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold uppercase tracking-wider">
-                      {vendor.category}
+                      {vendor.category?.name || (typeof vendor.category === 'string' ? vendor.category : 'Uncategorized')}
                     </span>
                   )}
                   <div className="flex items-center space-x-1">

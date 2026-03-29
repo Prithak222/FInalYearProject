@@ -140,7 +140,7 @@ export function VendorDashboard() {
             </Link>
 
             <Link
-              to="/vendor/dashboard"
+              to="/messages"
               className="p-6 bg-white rounded-lg border border-border hover:border-primary hover:shadow-md transition-all group"
             >
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
@@ -198,7 +198,7 @@ export function VendorDashboard() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground truncate">{product.title}</h3>
                     <div className="flex items-center space-x-3 text-xs text-muted-foreground mt-1">
-                      <span className="bg-slate-100 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">{product.category}</span>
+                      <span className="bg-slate-100 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">{product.category?.name || (typeof product.category === 'string' ? product.category : 'Uncategorized')}</span>
                       <span className="flex items-center space-x-1">
                         <EyeIcon className="w-3.5 h-3.5" />
                         <span>{product.views || 0}</span>

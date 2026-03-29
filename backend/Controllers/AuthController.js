@@ -315,6 +315,20 @@ const getPublicVendor = async (req, res) => {
   }
 };
 
+const getPublicUser = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.id)
+      .select('name image role shopName shopLogo');
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const updateProfile = async (req, res) => {
   try {
     const fieldsToUpdate = [
@@ -450,6 +464,7 @@ module.exports = {
   declineVendor,
   getCurrentUser,
   getPublicVendor,
+  getPublicUser,
   getAdminStats,
   getAllVendors,
   getVendorStats,

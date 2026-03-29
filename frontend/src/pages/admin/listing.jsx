@@ -171,7 +171,7 @@ export default function Listings() {
                         </div>
                         <div>
                           <p className="font-black text-slate-900 line-clamp-1">{item.title}</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">{item.category?.name || item.category}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">{item.category?.name || (typeof item.category === 'string' ? item.category : 'Uncategorized')}</p>
                         </div>
                       </div>
                     </td>

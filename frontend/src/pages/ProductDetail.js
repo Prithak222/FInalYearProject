@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { QuickChat } from '../components/QuickChat'
 
 
 export function ProductDetail() {
@@ -32,6 +33,7 @@ export function ProductDetail() {
   const [addedToCart, setAddedToCart] = useState(false)
   const [inCart, setInCart] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
+  const [showQuickChat, setShowQuickChat] = useState(false)
 
   // API Configuration
   const API_BASE = 'http://localhost:5000/api'
@@ -184,7 +186,7 @@ export function ProductDetail() {
            <nav className="flex items-center space-x-2 text-sm font-bold text-slate-400">
               <Link to="/" className="hover:text-primary transition-colors">Marketplace</Link>
               <ChevronRightIcon className="w-4 h-4 text-slate-300" />
-              <Link to={`/categories?category=${product.category?._id || product.category}`} className="hover:text-primary transition-colors">{product.category?.name || product.category}</Link>
+              <Link to={`/categories?category=${product.category?._id || product.category}`} className="hover:text-primary transition-colors">{product.category?.name || (typeof product.category === 'string' ? product.category : 'Uncategorized')}</Link>
               <ChevronRightIcon className="w-4 h-4 text-slate-300" />
               <span className="text-slate-900 truncate max-w-[150px]">{product.title}</span>
            </nav>
@@ -210,7 +212,7 @@ export function ProductDetail() {
               {/* Badges Overlay */}
               <div className="absolute top-8 left-8 flex flex-col space-y-3">
                  <span className="px-5 py-2 bg-white/80 backdrop-blur-xl rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-primary border border-white/50 shadow-xl">
-                    {product.category?.name || product.category}
+                    {product.category?.name || (typeof product.category === 'string' ? product.category : 'Uncategorized')}
                  </span>
                  <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-xl rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl">
                     {product.condition}
@@ -352,7 +354,10 @@ export function ProductDetail() {
                            </div>
                         </div>
                      </div>
-                     <button className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/5 transition-all active:scale-90">
+                     <button 
+                        onClick={() => isLoggedIn ? setShowQuickChat(true) : requireLogin()}
+                        className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/5 transition-all active:scale-90"
+                     >
                         <MessageCircleIcon className="w-6 h-6" />
                      </button>
                   </div>
@@ -432,6 +437,14 @@ export function ProductDetail() {
            {inCart ? 'View Cart' : 'Reserve Deal'}
          </button>
       </div>
+
+      {showQuickChat && (
+        <QuickChat 
+          otherUser={product.vendor}
+          productId={product._id}
+          onClose={() => setShowQuickChat(false)}
+        />
+      )}
 
     </div>
   )
