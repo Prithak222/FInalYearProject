@@ -63,7 +63,7 @@ export function Checkout() {
         price: item.productId.price,
         quantity: item.quantity,
         image: item.productId.image,
-        vendorId: item.productId.vendor
+        vendorId: item.productId.vendor._id || item.productId.vendor
       })),
       totalAmount: items.reduce((sum, item) => sum + (item.productId?.price * item.quantity || 0), 0)
     }

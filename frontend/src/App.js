@@ -23,6 +23,7 @@ import { Users } from './pages/admin/user'
 import { Vendors } from './pages/admin/vendor'
 import { Verification } from './pages/admin/verification'
 import Listings from './pages/admin/listing'
+import Payments from './pages/admin/payment'
 import { Profile } from './pages/Profile'
 import { ProductDetail } from './pages/ProductDetail'
 import { ShopDetail } from './pages/ShopDetail'
@@ -260,6 +261,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="admin">
                 <Listings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <Payments />
               </ProtectedRoute>
             }
           />

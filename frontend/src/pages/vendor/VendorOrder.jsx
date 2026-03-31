@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   SearchIcon,
   FilterIcon,
@@ -12,6 +13,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 
 export default function VendorOrders() {
+  const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
   const [activeTab, setActiveTab] = useState('all')
   const [orders, setOrders] = useState([])
@@ -42,9 +44,33 @@ export default function VendorOrders() {
   }
 
   const handleUpdateStatus = async (orderId, newStatus) => {
-    // This would require a backend update to allow vendors to update order status
-    // For now, we'll just show a placeholder or skip if not requested yet.
-    console.log(`Updating order ${orderId} to ${newStatus}`)
+    const token = sessionStorage.getItem('token')
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        // Update local state
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, orderStatus: newStatus } : o))
+      } else {
+        alert(data.message || 'Failed to update status')
+      }
+    } catch (err) {
+      console.error('Error updating status:', err)
+      alert('Connection error')
+    }
+  }
+
+  const handleChat = (userId) => {
+    if (userId) {
+      navigate(`/vendor/chat?user=${userId}`)
+    }
   }
 
   const filteredOrders = orders.filter((order) => {
@@ -182,14 +208,22 @@ export default function VendorOrders() {
                     </div>
 
                     <div className="flex space-x-2 mt-4">
-                      <button className="flex items-center space-x-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                      <button 
+                        onClick={() => handleChat(order.userId)}
+                        className="flex items-center space-x-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all"
+                      >
                         <MessageSquareIcon className="w-4 h-4" />
                         <span>Chat</span>
                       </button>
-                      <button className="flex items-center space-x-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all">
-                        <CheckCircleIcon className="w-4 h-4 text-green-400" />
-                        <span>Confirm Shipment</span>
-                      </button>
+                      {order.orderStatus.toLowerCase() === 'pending' && (
+                        <button 
+                          onClick={() => handleUpdateStatus(order._id, 'Shipped')}
+                          className="flex items-center space-x-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all"
+                        >
+                          <CheckCircleIcon className="w-4 h-4 text-green-400" />
+                          <span>Confirm Shipment</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 

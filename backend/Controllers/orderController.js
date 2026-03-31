@@ -51,24 +51,53 @@ const getMyOrders = async (req, res) => {
 const getVendorOrders = async (req, res) => {
     try {
         const vendorId = req.user._id;
-        // Find orders that contain at least one item from this vendor
-        const orders = await Order.find({ "items.vendorId": vendorId }).sort({ createdAt: -1 });
-        
-        // Optionally, filter items within each order to only show those belonging to this vendor
-        const vendorSpecificOrders = orders.map(order => {
-            const orderObj = order.toObject();
-            orderObj.items = orderObj.items.filter(item => item.vendorId.toString() === vendorId.toString());
-            return orderObj;
-        });
-
-        res.status(200).json(vendorSpecificOrders);
+        // Search by top-level vendorId now
+        const orders = await Order.find({ vendorId }).sort({ createdAt: -1 });
+        res.status(200).json(orders);
     } catch (err) {
         res.status(500).json({ message: "Server error fetching vendor orders", success: false });
+    }
+};
+
+const getAllOrdersForAdmin = async (req, res) => {
+    try {
+        const orders = await Order.find()
+            .populate('userId', 'name email')
+            .populate('vendorId', 'name email')
+            .sort({ createdAt: -1 });
+            
+        res.status(200).json(orders);
+    } catch (err) {
+        console.error("Error fetching all orders for admin:", err);
+        res.status(500).json({ message: "Server error fetching admin orders", success: false });
+    }
+};
+
+const updateOrderStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const vendorId = req.user._id;
+
+        const order = await Order.findOne({ _id: id, vendorId });
+        if (!order) {
+            return res.status(404).json({ message: "Order not found or access denied", success: false });
+        }
+
+        order.orderStatus = status;
+        await order.save();
+
+        res.status(200).json({ message: `Order status updated to ${status}`, success: true, order });
+    } catch (err) {
+        console.error("Error updating order status:", err);
+        res.status(500).json({ message: "Server error updating order status", success: false });
     }
 };
 
 module.exports = {
     createOrder,
     getMyOrders,
-    getVendorOrders
+    getVendorOrders,
+    getAllOrdersForAdmin,
+    updateOrderStatus
 };

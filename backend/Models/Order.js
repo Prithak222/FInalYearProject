@@ -7,6 +7,11 @@ const orderSchema = new Schema({
         ref: 'User',
         required: true
     },
+    vendorId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     items: [
         {
             productId: {
@@ -37,6 +42,14 @@ const orderSchema = new Schema({
         type: Number,
         required: true
     },
+    commission: {
+        type: Number,
+        default: 0
+    },
+    vendorEarning: {
+        type: Number,
+        default: 0
+    },
     paymentStatus: {
         type: String,
         enum: ['Pending', 'Completed', 'Failed'],
@@ -49,7 +62,7 @@ const orderSchema = new Schema({
     },
     transactionUuid: {
         type: String,
-        unique: true
+        // unique: true // Removed unique to allow multiple vendor orders per transaction
     },
     esewaTransactionCode: {
         type: String

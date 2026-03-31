@@ -11,22 +11,54 @@ const initializeEsewa = async (req, res) => {
             return res.status(400).json({ message: "No items in order", success: false });
         }
 
-        // Generate a unique transaction UUID
+        // Generate a unique transaction UUID for this checkout session
         const transactionUuid = `${Date.now()}-${userId}`;
 
-        const newOrder = new Order({
-            userId,
-            items,
-            shippingInfo,
-            totalAmount,
-            paymentStatus: 'Pending',
-            orderStatus: 'Pending',
-            transactionUuid
-        });
+        // Group items by vendorId
+        const vendorGroups = items.reduce((groups, item) => {
+            // Support both string vendorId and populated vendor object
+            const vId = item.vendorId?._id || item.vendorId;
+            const vIdStr = vId.toString();
+            
+            if (!groups[vIdStr]) {
+                groups[vIdStr] = [];
+            }
+            groups[vIdStr].push(item);
+            return groups;
+        }, {});
 
-        const savedOrder = await newOrder.save();
+        const orderIds = [];
+        
+        // Create an order for each vendor
+        for (const vIdStr in vendorGroups) {
+            const vendorItems = vendorGroups[vIdStr];
+            const vendorTotal = vendorItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Calculate commission (5%) and vendor earning (95%)
+            const commission = vendorTotal * 0.05;
+            const vendorEarning = vendorTotal - commission;
 
-        // Prepare data for eSewa
+            const newOrder = new Order({
+                userId,
+                vendorId: vIdStr,
+                items: vendorItems.map(item => ({
+                    ...item,
+                    vendorId: vIdStr // Ensure the item's vendorId is also a string
+                })),
+                shippingInfo,
+                totalAmount: vendorTotal,
+                commission,
+                vendorEarning,
+                paymentStatus: 'Pending',
+                orderStatus: 'Pending',
+                transactionUuid
+            });
+
+            const savedOrder = await newOrder.save();
+            orderIds.push(savedOrder._id);
+        }
+
+        // Prepare data for eSewa (Total amount for the whole cart)
         const signatureMessage = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${process.env.ESEWA_PRODUCT_CODE}`;
         const signature = generateSignature(signatureMessage);
 
@@ -48,7 +80,7 @@ const initializeEsewa = async (req, res) => {
             message: "Payment initialized",
             success: true,
             esewaData,
-            orderId: savedOrder._id,
+            orderIds, // Return all order IDs
             gatewayUrl: process.env.ESEWA_GATEWAY_URL
         });
     } catch (err) {
@@ -84,25 +116,29 @@ const completePayment = async (req, res) => {
             return res.redirect(`${process.env.FRONTEND_URL}/payment-failed`);
         }
 
-        // Update Order
-        const order = await Order.findOneAndUpdate(
+        // Update ALL orders belonging to this transaction
+        const updateResult = await Order.updateMany(
             { transactionUuid: transaction_uuid },
             { 
                 paymentStatus: 'Completed',
                 esewaTransactionCode: transaction_code
-            },
-            { new: true }
+            }
         );
 
-        if (!order) {
-            return res.status(404).send("Order not found");
+        console.log(`Updated ${updateResult.modifiedCount} orders for transaction ${transaction_uuid}`);
+
+        // Find one of the orders to get the userId for cart clearing
+        const sampleOrder = await Order.findOne({ transactionUuid: transaction_uuid });
+        
+        if (!sampleOrder) {
+            return res.status(404).send("Orders not found after update");
         }
 
         // Clear Cart
-        await Cart.findOneAndDelete({ userId: order.userId });
+        await Cart.findOneAndDelete({ userId: sampleOrder.userId });
 
-        // Redirect to success page
-        res.redirect(`${process.env.FRONTEND_URL}/order-success?orderId=${order._id}`);
+        // Redirect to success page (optionally pass the transaction UUID or just a generic success)
+        res.redirect(`${process.env.FRONTEND_URL}/order-success?transactionId=${transaction_uuid}`);
     } catch (err) {
         console.error("Error completing payment:", err);
         res.status(500).send("Server error");
