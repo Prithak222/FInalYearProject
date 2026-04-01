@@ -149,8 +149,26 @@ const failedPayment = async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/payment-failed`);
 };
 
+const getPaymentHistory = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        // Fetch all orders with paymentStatus: 'Completed' for this user
+        const orders = await Order.find({ userId, paymentStatus: 'Completed' })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            payments: orders
+        });
+    } catch (err) {
+        console.error("Error fetching payment history:", err);
+        res.status(500).json({ message: "Server error fetching payment history", success: false });
+    }
+};
+
 module.exports = {
     initializeEsewa,
     completePayment,
-    failedPayment
+    failedPayment,
+    getPaymentHistory
 };

@@ -36,6 +36,7 @@ import { OrderSuccess } from './pages/OrderSuccess'
 import { MyOrders } from './pages/MyOrders'
 import { Messages } from './pages/Messages'
 import { VendorChat } from './pages/vendor/VendorChat'
+import PaymentHistory from './pages/Payment'
 
 
 function NavbarWrapper() {
@@ -157,6 +158,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-history"
+            element={
+              <ProtectedRoute>
+                <PaymentHistory />
               </ProtectedRoute>
             }
           />
