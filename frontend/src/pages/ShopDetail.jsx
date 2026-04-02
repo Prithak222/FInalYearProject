@@ -64,7 +64,7 @@ export function ShopDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 pt-24">
       {/* Banner Section */}
       <div className="relative h-64 md:h-80 bg-slate-200 overflow-hidden">
         {vendor.shopBanner ? (

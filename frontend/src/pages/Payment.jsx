@@ -17,11 +17,10 @@ export default function PaymentHistory() {
   const fetchPaymentHistory = async () => {
     const token = sessionStorage.getItem('token')
     try {
-      // Assuming your backend API base URL is at port 5000
       const res = await fetch('http://localhost:5000/api/payments/payment-history', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      const data = await res.json()
+      const data = await res.json() 
       if (data.success && Array.isArray(data.payments)) {
         setPayments(data.payments)
       }
@@ -33,13 +32,16 @@ export default function PaymentHistory() {
   }
 
   const totalSpent = payments
-    .reduce((sum, p) => sum + p.totalAmount, 0)
+    .reduce((sum, p) => sum + p.amount, 0)
 
-  const filteredPayments = payments.filter((p) => 
-    p.transactionUuid?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.items?.some(item => item.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    p._id.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredPayments = payments.filter((p) => {
+    const transactionMatch = p.transactionUuid?.toLowerCase().includes(searchTerm.toLowerCase());
+    const idMatch = p._id.toLowerCase().includes(searchTerm.toLowerCase());
+    const itemMatch = p.orderIds?.some(order => 
+      order.items?.some(item => item.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    return transactionMatch || idMatch || itemMatch;
+  });
 
   if (loading) {
     return (
@@ -51,7 +53,7 @@ export default function PaymentHistory() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 pt-32 pb-8">
 
         {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -79,7 +81,7 @@ export default function PaymentHistory() {
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Success Orders</div>
+            <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Success Payments</div>
             <div className="text-3xl font-black text-gray-900">
               {payments.length}
             </div>
@@ -136,61 +138,69 @@ export default function PaymentHistory() {
 
               <tbody className="divide-y divide-gray-50">
                 {filteredPayments.length > 0 ? (
-                  filteredPayments.map((p) => (
-                    <tr key={p._id} className="hover:bg-gray-50/50 transition-colors">
+                  filteredPayments.map((p) => {
+                    // Collect all items from all orders associated with this payment
+                    const allItems = p.orderIds?.flatMap(order => order.items || []) || [];
+                    const firstItem = allItems[0];
 
-                      <td className="px-6 py-5">
-                        <div className="text-sm font-mono font-bold text-blue-600">
-                          #{p.transactionUuid?.slice(-8).toUpperCase() || p._id.slice(-8).toUpperCase()}
-                        </div>
-                        <div className="text-[10px] text-gray-400 font-medium">ID: {p._id}</div>
-                      </td>
+                    return (
+                      <tr key={p._id} className="hover:bg-gray-50/50 transition-colors">
 
-                      <td className="px-6 py-5">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-gray-800 line-clamp-1">{p.items?.[0]?.title}</span>
-                          {p.items?.length > 1 && (
-                            <span className="text-xs text-gray-500">+{p.items.length - 1} more items</span>
-                          )}
-                        </div>
-                      </td>
+                        <td className="px-6 py-5">
+                          <div className="text-sm font-mono font-bold text-blue-600">
+                            #{p.transactionUuid?.slice(-8).toUpperCase()}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Ref: {p.transactionCode || 'N/A'}</div>
+                        </td>
 
-                      <td className="px-6 py-5 font-black text-gray-900">
-                        Rs. {p.totalAmount.toLocaleString()}
-                      </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-gray-800 line-clamp-1">
+                              {firstItem?.title || 'Multiple Items'}
+                            </span>
+                            {allItems.length > 1 && (
+                              <span className="text-xs text-gray-500">+{allItems.length - 1} more items</span>
+                            )}
+                          </div>
+                        </td>
 
-                      <td className="px-6 py-5 text-sm text-gray-600 font-medium whitespace-nowrap">
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                          {new Date(p.createdAt).toLocaleDateString()}
-                        </div>
-                      </td>
+                        <td className="px-6 py-5 font-black text-gray-900">
+                          Rs. {p.amount.toLocaleString()}
+                        </td>
 
-                      <td className="px-6 py-5">
-                        <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-green-100 text-green-700">
-                          eSewa
-                        </span>
-                      </td>
+                        <td className="px-6 py-5 text-sm text-gray-600 font-medium whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                            {new Date(p.createdAt).toLocaleDateString()}
+                          </div>
+                        </td>
 
-                      <td className="px-6 py-5 text-right">
-                        <div className="flex justify-end space-x-2">
-                          <button 
-                            title="View Details"
-                            className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                          >
-                            <EyeIcon className="w-5 h-5" />
-                          </button>
-                          <button 
-                            title="Download Invoice"
-                            className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"
-                          >
-                            <DownloadIcon className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
+                        <td className="px-6 py-5">
+                          <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-green-100 text-green-700">
+                            {p.paymentMethod}
+                          </span>
+                        </td>
 
-                    </tr>
-                  ))
+                        <td className="px-6 py-5 text-right">
+                          <div className="flex justify-end space-x-2">
+                            <button 
+                              title="View Details"
+                              className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                            >
+                              <EyeIcon className="w-5 h-5" />
+                            </button>
+                            <button 
+                              title="Download Invoice"
+                              className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"
+                            >
+                              <DownloadIcon className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+
+                      </tr>
+                    )
+                  })
                 ) : (
                   <tr>
                     <td colSpan="6" className="px-6 py-20 text-center">
@@ -215,4 +225,4 @@ export default function PaymentHistory() {
       </div>
     </div>
   )
-}
+}

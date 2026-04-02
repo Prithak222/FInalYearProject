@@ -118,7 +118,7 @@ export function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-8 pb-16">
+    <div className="min-h-screen bg-slate-50 pt-32 pb-16">
       <div className="max-w-6xl mx-auto px-4">
         {/* Back to Cart */}
         <Link to="/cart" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-8 transition-colors">

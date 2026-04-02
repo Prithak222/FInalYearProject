@@ -59,8 +59,8 @@ export function Categories() {
 
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-[#FDFCFB] pb-20 md:pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
 
         {/* Header */}
         <div className="mb-10 text-center md:text-left">

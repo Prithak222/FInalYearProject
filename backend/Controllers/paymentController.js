@@ -1,5 +1,6 @@
 const Order = require("../Models/Order");
 const Cart = require("../Models/cart");
+const Payment = require("../Models/Payment");
 const { generateSignature, verifyEsewaStatus } = require("../Utils/esewa");
 
 const initializeEsewa = async (req, res) => {
@@ -137,6 +138,23 @@ const completePayment = async (req, res) => {
         // Clear Cart
         await Cart.findOneAndDelete({ userId: sampleOrder.userId });
 
+        // Save detailed record to the dedicated Payment collection
+        const totalAmountNum = Number(total_amount);
+        const orderIds = await Order.find({ transactionUuid: transaction_uuid }).distinct('_id');
+        
+        const newPaymentRecord = new Payment({
+            userId: sampleOrder.userId,
+            orderIds,
+            transactionUuid: transaction_uuid,
+            transactionCode: transaction_code,
+            amount: totalAmountNum,
+            status: 'Completed',
+            paymentMethod: 'eSewa'
+        });
+
+        await newPaymentRecord.save();
+        console.log(`Successfully saved payment record for transaction ${transaction_uuid}`);
+
         // Redirect to success page (optionally pass the transaction UUID or just a generic success)
         res.redirect(`${process.env.FRONTEND_URL}/order-success?transactionId=${transaction_uuid}`);
     } catch (err) {
@@ -152,16 +170,23 @@ const failedPayment = async (req, res) => {
 const getPaymentHistory = async (req, res) => {
     try {
         const userId = req.user._id;
-        // Fetch all orders with paymentStatus: 'Completed' for this user
-        const orders = await Order.find({ userId, paymentStatus: 'Completed' })
+        // Fetch from the dedicated Payment collection
+        const payments = await Payment.find({ userId, status: 'Completed' })
+            .populate({
+                path: 'orderIds',
+                populate: {
+                    path: 'items',
+                    select: 'title image price quantity'
+                }
+            })
             .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
-            payments: orders
+            payments: payments
         });
     } catch (err) {
-        console.error("Error fetching payment history:", err);
+        console.error("Error fetching payment history from collection:", err);
         res.status(500).json({ message: "Server error fetching payment history", success: false });
     }
 };

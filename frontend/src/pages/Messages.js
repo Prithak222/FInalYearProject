@@ -81,7 +81,7 @@ export function Messages({ isVendorPortal = false }) {
     }, [socket, user._id, selectedUser?._id]);
 
     return (
-        <div className={`${isVendorPortal ? 'h-[calc(100vh-0px)]' : 'min-h-screen'} bg-slate-50 flex overflow-hidden`}>
+        <div className={`${isVendorPortal ? 'h-[calc(100vh-0px)]' : 'min-h-screen pt-20'} bg-slate-50 flex overflow-hidden`}>
             {/* Sidebar */}
             <div className="w-80 md:w-96 bg-white border-r flex flex-col">
                 <div className="p-6 border-b">

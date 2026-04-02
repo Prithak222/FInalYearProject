@@ -57,7 +57,7 @@ export function MyOrders() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 pt-8">
+    <div className="min-h-screen bg-slate-50 pb-20 pt-32">
       <div className="max-w-5xl mx-auto px-4">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">

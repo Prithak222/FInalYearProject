@@ -179,7 +179,7 @@ export function ProductDetail() {
       {/* Dynamic Header Overlay */}
       <div className="fixed top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-blue-500 to-indigo-600 z-[60]" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10">
         
         {/* Superior Navigation */}
         <div className="mb-10 flex items-center justify-between">

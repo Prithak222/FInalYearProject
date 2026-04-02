@@ -84,7 +84,7 @@ export function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-20">
+    <div className="min-h-screen bg-slate-50/50 pb-20 pt-24">
       {/* Hero Banner */}
       <div className="h-48 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/10" />
 

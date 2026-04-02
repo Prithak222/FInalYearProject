@@ -22,6 +22,17 @@ export function Navbar() {
   const { userRole, isLoggedIn, logout, user, cartCount } = useAuth()
 
   const [showVendorMenu, setShowVendorMenu] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  const isHomePage = location.pathname === '/'
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const isActive = (path) => location.pathname === path
 
@@ -38,17 +49,20 @@ export function Navbar() {
     navigate('/')
   }
 
+  // Adaptive styles
+  const isDarkNav = isScrolled || !isHomePage
+
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-border">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isDarkNav ? 'bg-white/90 backdrop-blur-md border-b border-border py-2' : 'bg-transparent py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-slate-900 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 rotate-3 group-hover:rotate-0">
-              <span className="text-white font-black text-xl">D</span>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-500 rotate-3 group-hover:rotate-0 ${isDarkNav ? 'bg-slate-900' : 'bg-white'}`}>
+              <span className={`font-black text-xl ${isDarkNav ? 'text-white' : 'text-black'}`}>D</span>
             </div>
-            <span className="text-2xl font-black text-slate-900 tracking-tighter">DosroDeal</span>
+            <span className={`text-2xl font-black tracking-tighter transition-colors ${isDarkNav ? 'text-slate-900' : 'text-white'}`}>DosroDeal</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -59,12 +73,11 @@ export function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive(link.path)
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${isActive(link.path)
+                    ? 'text-primary'
+                    : isDarkNav ? 'text-muted-foreground hover:bg-accent hover:text-accent-foreground' : 'text-white/80 hover:text-white'
                     }`}
                 >
-                  <Icon className="w-4 h-4" />
                   <span>{link.label}</span>
                 </Link>
               )
@@ -79,7 +92,7 @@ export function Navbar() {
                 to="/cart"
                 className="relative p-2 text-muted-foreground hover:text-primary transition-colors hidden md:block"
               >
-                <ShoppingCartIcon className="w-6 h-6" />
+                <ShoppingCartIcon className={`w-6 h-6 ${isDarkNav ? 'text-muted-foreground' : 'text-white'}`} />
                 {cartCount > 0 && (
                   <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-primary rounded-full border-2 border-white">
                     {cartCount}
@@ -92,22 +105,22 @@ export function Navbar() {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className={`px-4 py-2 text-sm font-bold transition-colors ${isDarkNav ? 'text-muted-foreground hover:text-foreground' : 'text-white/80 hover:text-white'}`}
                 >
-                  Login
+                  Log In
                 </Link>
                 <Link
                   to="/register"
-                  className="hidden sm:block px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-all active:scale-95 shadow-sm"
+                  className={`hidden sm:block px-6 py-2 rounded-full text-sm font-bold transition-all active:scale-95 shadow-lg ${isDarkNav ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white text-black hover:bg-white/90'}`}
                 >
-                  Register
+                  Get Started
                 </Link>
 
                 {/* Vendor Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setShowVendorMenu(!showVendorMenu)}
-                    className="flex items-center space-x-1 px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors"
+                    className={`flex items-center space-x-1 px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors ${isDarkNav ? 'text-foreground' : 'text-white'}`}
                   >
                     <StoreIcon className="w-4 h-4" />
                     <span className="hidden sm:inline">Vendor</span>
@@ -123,14 +136,14 @@ export function Navbar() {
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg border border-border shadow-lg py-1 z-20 animate-in fade-in zoom-in duration-200">
                         <Link
                           to="/vendor/login"
-                          className="block px-4 py-2 text-sm hover:bg-accent transition-colors"
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-accent transition-colors"
                           onClick={() => setShowVendorMenu(false)}
                         >
                           Vendor Login
                         </Link>
                         <Link
                           to="/vendor/register"
-                          className="block px-4 py-2 text-sm hover:bg-accent transition-colors"
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-accent transition-colors"
                           onClick={() => setShowVendorMenu(false)}
                         >
                           Vendor Register
@@ -166,7 +179,7 @@ export function Navbar() {
                         </span>
                       )}
                     </div>
-                    <ChevronDownIcon className="w-4 h-4 text-muted-foreground hidden sm:block" />
+                    <ChevronDownIcon className={`w-4 h-4 hidden sm:block ${isDarkNav ? 'text-muted-foreground' : 'text-white'}`} />
                   </button>
 
                   {showVendorMenu && (
@@ -187,7 +200,7 @@ export function Navbar() {
                         </div>
 
                         {/* Menu Items */}
-                        <div className="p-1">
+                        <div className="p-1 text-slate-700">
                           <ProfileDropDownItem
                             to="/profile"
                             icon={<UserIcon className="w-4 h-4" />}
@@ -247,7 +260,7 @@ export function Navbar() {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-around h-16 px-2">
           {navLinks.map((link) => {
             const Icon = link.icon
@@ -255,22 +268,22 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex flex-col items-center justify-center flex-1 h-full space-y-1 ${isActive(link.path) ? 'text-primary' : 'text-muted-foreground'
+                className={`flex flex-col items-center justify-center flex-1 h-full space-y-1 transition-all ${isActive(link.path) ? 'text-primary' : 'text-slate-400'
                   }`}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-xs font-medium">{link.label}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">{link.label}</span>
               </Link>
             )
           })}
           {isLoggedIn && (
             <Link
               to="/cart"
-              className={`flex flex-col items-center justify-center flex-1 h-full space-y-1 relative ${isActive('/cart') ? 'text-primary' : 'text-muted-foreground'
+              className={`flex flex-col items-center justify-center flex-1 h-full space-y-1 relative transition-all ${isActive('/cart') ? 'text-primary' : 'text-slate-400'
                 }`}
             >
               <ShoppingCartIcon className="w-5 h-5" />
-              <span className="text-xs font-medium">Cart</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Cart</span>
               {cartCount > 0 && (
                 <span className="absolute top-2 right-1/4 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-primary rounded-full border border-white">
                   {cartCount}
