@@ -22,10 +22,11 @@ router.get('/admin/dashboard', adminOnly, (req, res) => {
 });
 
 // Admin Vendor Management Routes
-const { getPendingVendors, approveVendor, declineVendor, getAdminStats, getAllVendors, getVendorStats, getAllUsers, getUserStats } = require("../Controllers/AuthController");
+const { getPendingVendors, approveVendor, declineVendor, removeVendor, getAdminStats, getAllVendors, getVendorStats, getAllUsers, getUserStats } = require("../Controllers/AuthController");
 router.get('/admin/vendors/pending', adminOnly, getPendingVendors);
 router.put('/admin/vendors/:id/approve', adminOnly, approveVendor); // Changed to PUT as it updates state
 router.delete('/admin/vendors/:id/decline', adminOnly, declineVendor);
+router.delete('/admin/vendors/:id', adminOnly, removeVendor);
 
 router.get('/admin/stats', adminOnly, getAdminStats);
 router.get('/admin/vendors', adminOnly, getAllVendors);

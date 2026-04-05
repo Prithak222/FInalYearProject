@@ -59,10 +59,10 @@ export function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-500 rotate-3 group-hover:rotate-0 ${isDarkNav ? 'bg-slate-900' : 'bg-white'}`}>
-              <span className={`font-black text-xl ${isDarkNav ? 'text-white' : 'text-black'}`}>D</span>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-500 rotate-3 group-hover:rotate-0 bg-slate-900 shadow-lg shadow-slate-900/10`}>
+              <span className="font-black text-xl text-white">D</span>
             </div>
-            <span className={`text-2xl font-black tracking-tighter transition-colors ${isDarkNav ? 'text-slate-900' : 'text-white'}`}>DosroDeal</span>
+            <span className={`text-2xl font-black tracking-tighter transition-colors text-slate-900`}>DosroDeal</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -75,7 +75,7 @@ export function Navbar() {
                   to={link.path}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${isActive(link.path)
                     ? 'text-primary'
-                    : isDarkNav ? 'text-muted-foreground hover:bg-accent hover:text-accent-foreground' : 'text-white/80 hover:text-white'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                 >
                   <span>{link.label}</span>
@@ -90,9 +90,9 @@ export function Navbar() {
             {isLoggedIn && (
               <Link
                 to="/cart"
-                className="relative p-2 text-muted-foreground hover:text-primary transition-colors hidden md:block"
+                className="relative p-2 text-slate-500 hover:text-primary transition-colors hidden md:block"
               >
-                <ShoppingCartIcon className={`w-6 h-6 ${isDarkNav ? 'text-muted-foreground' : 'text-white'}`} />
+                <ShoppingCartIcon className="w-6 h-6" />
                 {cartCount > 0 && (
                   <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-primary rounded-full border-2 border-white">
                     {cartCount}
@@ -105,13 +105,13 @@ export function Navbar() {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className={`px-4 py-2 text-sm font-bold transition-colors ${isDarkNav ? 'text-muted-foreground hover:text-foreground' : 'text-white/80 hover:text-white'}`}
+                  className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/register"
-                  className={`hidden sm:block px-6 py-2 rounded-full text-sm font-bold transition-all active:scale-95 shadow-lg ${isDarkNav ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white text-black hover:bg-white/90'}`}
+                  className={`hidden sm:block px-6 py-2 rounded-full text-sm font-bold transition-all active:scale-95 shadow-lg bg-slate-900 text-white hover:bg-slate-800`}
                 >
                   Get Started
                 </Link>
@@ -120,7 +120,7 @@ export function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setShowVendorMenu(!showVendorMenu)}
-                    className={`flex items-center space-x-1 px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors ${isDarkNav ? 'text-foreground' : 'text-white'}`}
+                    className="flex items-center space-x-1 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors text-slate-700"
                   >
                     <StoreIcon className="w-4 h-4" />
                     <span className="hidden sm:inline">Vendor</span>
@@ -179,7 +179,7 @@ export function Navbar() {
                         </span>
                       )}
                     </div>
-                    <ChevronDownIcon className={`w-4 h-4 hidden sm:block ${isDarkNav ? 'text-muted-foreground' : 'text-white'}`} />
+                    <ChevronDownIcon className="w-4 h-4 hidden sm:block text-slate-400" />
                   </button>
 
                   {showVendorMenu && (

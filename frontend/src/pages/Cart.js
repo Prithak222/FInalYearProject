@@ -51,26 +51,6 @@ export function Cart() {
     }
   }
 
-  const handleUpdateQuantity = async (productId, newQty) => {
-    if (newQty < 1) return
-    const token = sessionStorage.getItem('token')
-    try {
-      await fetch(`http://localhost:5000/api/cart/update`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ productId, quantity: newQty })
-      })
-      setItems(items.map(item => 
-        item.productId?._id === productId ? { ...item, quantity: newQty } : item
-      ))
-      refreshCartCount()
-    } catch (err) {
-      console.error(err)
-    }
-  }
 
   const totalPrice = items.reduce((sum, item) => sum + (item.productId?.price * item.quantity || 0), 0)
 
@@ -126,31 +106,23 @@ export function Cart() {
                         )}
                       </div>
                       
-                      {/* Quantity Controls */}
-                      <div className="flex items-center space-x-3 mt-3">
-                        <div className="flex items-center border border-border rounded-lg bg-slate-50">
-                          <button 
-                            onClick={() => handleUpdateQuantity(product._id, item.quantity - 1)}
-                            className="px-3 py-1 text-lg font-medium hover:text-primary transition-colors"
-                          >-</button>
-                          <span className="px-2 font-bold text-sm min-w-[20px] text-center">{item.quantity}</span>
-                          <button 
-                            onClick={() => handleUpdateQuantity(product._id, item.quantity + 1)}
-                            className="px-3 py-1 text-lg font-medium hover:text-primary transition-colors"
-                          >+</button>
+                      {/* Item Actions */}
+                      <div className="flex items-center space-x-4 mt-3">
+                        <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          Qty: 1
                         </div>
                         <button
                           onClick={() => handleRemove(product._id)}
-                          className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider"
+                          className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider flex items-center"
                         >
+                          <Trash2Icon className="w-3.5 h-3.5 mr-1" />
                           Remove
                         </button>
                       </div>
                     </div>
 
                     <div className="hidden sm:block text-right ml-4">
-                      <div className="text-lg font-black text-foreground">Rs. {product.price * item.quantity}</div>
-                      <div className="text-xs text-muted-foreground">Total</div>
+                      <div className="text-lg font-black text-foreground">Rs. {product.price}</div>
                     </div>
                   </div>
                 );

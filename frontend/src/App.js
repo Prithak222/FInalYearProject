@@ -18,12 +18,14 @@ import { VendorProducts } from './pages/vendor/VendorProducts'
 import { PostItem, PostItem as VendorPost } from './pages/vendor/VendorPost'
 import { VendorProfile } from './pages/vendor/VendorProfile'
 import { default as VendorOrders } from './pages/vendor/VendorOrder'
+import VendorEarnings from './pages/vendor/VendorEarning'
 import { AdminDashboard } from './pages/admin/adminDashboard'
 import { Users } from './pages/admin/user'
 import { Vendors } from './pages/admin/vendor'
 import { Verification } from './pages/admin/verification'
 import Listings from './pages/admin/listing'
 import Payments from './pages/admin/payment'
+import { Reports } from './pages/admin/Reports'
 import { Profile } from './pages/Profile'
 import { ProductDetail } from './pages/ProductDetail'
 import { ShopDetail } from './pages/ShopDetail'
@@ -231,6 +233,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/vendor/earnings"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorEarnings />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin routes */}
           <Route
@@ -270,6 +280,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="admin">
                 <Listings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <Reports />
               </ProtectedRoute>
             }
           />

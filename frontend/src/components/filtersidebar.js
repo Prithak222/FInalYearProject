@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { XIcon } from 'lucide-react'
 
-export function FilterSidebar({ isOpen = true, onClose, onApply }) {
+export function FilterSidebar({ isOpen = true, onClose, onApply, initialFilters }) {
   const conditions = ['New', 'Like New', 'Good', 'Fair']
-  const [priceRange, setPriceRange] = useState([0, 100000])
-  const [selectedConditions, setSelectedConditions] = useState([])
-  const [selectedCategories, setSelectedCategories] = useState([])
+  const [priceRange, setPriceRange] = useState([initialFilters?.minPrice || 0, initialFilters?.maxPrice || 100000])
+  const [selectedConditions, setSelectedConditions] = useState(initialFilters?.condition || [])
+  const [selectedCategories, setSelectedCategories] = useState(initialFilters?.category || [])
 
   const [dbCategories, setDbCategories] = useState([])
 

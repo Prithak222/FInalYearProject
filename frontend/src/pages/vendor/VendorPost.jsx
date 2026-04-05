@@ -57,6 +57,7 @@ export function PostItem() {
     location: '',
     image: '',
     images: [],
+    quantity: 1,
   })
 
   const [error, setError] = useState('')
@@ -78,6 +79,7 @@ export function PostItem() {
               location: data.location || '',
               image: data.image || '',
               images: data.images || (data.image ? [data.image] : []),
+              quantity: data.quantity || 1,
             })
 
           } else {
@@ -159,6 +161,30 @@ export function PostItem() {
     })
   }
 
+  const validateStep = () => {
+    switch (step) {
+      case 1:
+        return !!formData.category
+      case 2:
+        return !!formData.title && !!formData.price && !!formData.originalPrice && !!formData.quantity && formData.quantity > 0
+      case 3:
+        return formData.images.length > 0
+      case 4:
+        return !!formData.description && !!formData.location
+      default:
+        return false
+    }
+  }
+
+  const handleNextStep = () => {
+    if (validateStep()) {
+      setStep(step + 1)
+      setError('')
+    } else {
+      setError('Please fill in all required fields before continuing.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -222,6 +248,7 @@ export function PostItem() {
   const handleCategorySelect = (catId) => {
     updateField('category', catId)
     setStep(2)
+    setError('')
   }
 
   const progress = (step / 4) * 100
@@ -337,17 +364,33 @@ export function PostItem() {
                         </div>
                         <div className="group">
                           <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 group-focus-within:text-primary transition-colors">Original Price (Rs.)</label>
-                          <div className="relative opacity-60">
+                          <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">Rs.</span>
                             <input
                               type="number"
                               value={formData.originalPrice}
                               onChange={(e) => updateField('originalPrice', e.target.value)}
-                              placeholder="Optional"
+                              placeholder="MSRP / Bought Price"
                               className="w-full text-lg font-bold bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-slate-300"
                             />
                           </div>
                         </div>
+                      </div>
+
+                      <div className="group">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 group-focus-within:text-primary transition-colors">Available Quantity (Stock)</label>
+                        <div className="relative">
+                          <Package className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                          <input
+                            type="number"
+                            min="1"
+                            value={formData.quantity}
+                            onChange={(e) => updateField('quantity', parseInt(e.target.value) || 1)}
+                            placeholder="1"
+                            className="w-full text-lg font-bold bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-slate-300"
+                          />
+                        </div>
+                        <p className="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">Specify how many units you have for sale.</p>
                       </div>
 
                       <div className="group">
@@ -494,9 +537,8 @@ export function PostItem() {
                   {step < 4 ? (
                     <button
                       type="button"
-                      onClick={() => setStep(step + 1)}
-                      disabled={step === 1 && !formData.category}
-                      className="flex items-center space-x-2 px-10 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all disabled:opacity-50 disabled:grayscale"
+                      onClick={handleNextStep}
+                      className="flex items-center space-x-2 px-10 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                     >
                       <span>Continue</span>
                       <ChevronRight className="w-5 h-5" />
@@ -504,7 +546,7 @@ export function PostItem() {
                   ) : (
                     <button
                       type="button"
-                      onClick={handleSubmit}
+                      onClick={(e) => validateStep() ? handleSubmit(e) : setError('Please fill in all required fields.')}
                       disabled={isPublishing}
                       className="flex items-center space-x-2 px-10 py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 disabled:opacity-70"
                     >

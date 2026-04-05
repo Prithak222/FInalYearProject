@@ -17,6 +17,8 @@ export function VendorDashboard() {
     activeListings: 0,
     totalViews: 0,
     wishlistSaves: 0,
+    totalSales: 0,
+    totalEarnings: 0,
     messages: 0
   })
   const [loading, setLoading] = React.useState(true)
@@ -106,7 +108,7 @@ export function VendorDashboard() {
           {[
             { icon: PackageIcon, bg: 'bg-primary/10', color: 'text-primary', title: 'Active Listings', value: statsData.activeListings },
             { icon: EyeIcon, bg: 'bg-blue-100', color: 'text-blue-600', title: 'Total Views', value: statsData.totalViews.toLocaleString() },
-            { icon: HeartIcon, bg: 'bg-red-100', color: 'text-red-600', title: 'Wishlist Saves', value: statsData.wishlistSaves },
+            { icon: TrendingUpIcon, bg: 'bg-green-100', color: 'text-green-600', title: 'Total Earnings', value: `Rs. ${statsData.totalEarnings.toLocaleString()}` },
             { icon: MessageSquareIcon, bg: 'bg-amber-100', color: 'text-amber-600', title: 'Messages', value: statsData.messages },
           ].map((stat, index) => {
             const Icon = stat.icon

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../Models/products");
+const Order = require("../Models/Order");
 
 const { ensureAuthenticated, vendorApprovedOnly, adminOnly } = require('../Middlewares/AuthValidation');
 
@@ -16,7 +17,8 @@ router.post('/', ensureAuthenticated, vendorApprovedOnly, async (req, res) => {
       description,
       location,
       image,
-      images
+      images,
+      quantity
     } = req.body;
 
     const newProduct = new Product({
@@ -29,6 +31,7 @@ router.post('/', ensureAuthenticated, vendorApprovedOnly, async (req, res) => {
       location,
       image,
       images,
+      quantity: quantity || 1,
       vendor: req.user._id // Link the product to the vendor
     });
 
@@ -58,21 +61,35 @@ router.get("/vendor", ensureAuthenticated, async (req, res) => {
 // 📊 Get current vendor's stats
 router.get("/vendor/stats", ensureAuthenticated, async (req, res) => {
   try {
-    const products = await Product.find({ vendor: req.user._id });
-
-    const stats = products.reduce((acc, curr) => {
+    const vendorId = req.user._id;
+    const products = await Product.find({ vendor: vendorId });
+    
+    // Calculate product-related stats
+    const productStats = products.reduce((acc, curr) => {
       acc.totalViews += (curr.views || 0);
       acc.wishlistSaves += (curr.wishlistCount || 0);
       return acc;
     }, { totalViews: 0, wishlistSaves: 0 });
 
+    // Calculate sales-related stats from completed orders
+    const orders = await Order.find({ vendorId, paymentStatus: 'Completed' });
+    
+    const salesStats = orders.reduce((acc, order) => {
+      acc.totalSales += order.totalAmount;
+      acc.totalEarnings += order.vendorEarning;
+      return acc;
+    }, { totalSales: 0, totalEarnings: 0 });
+
     res.json({
       activeListings: products.length,
-      totalViews: stats.totalViews,
-      wishlistSaves: stats.wishlistSaves,
+      totalViews: productStats.totalViews,
+      wishlistSaves: productStats.wishlistSaves,
+      totalSales: salesStats.totalSales,
+      totalEarnings: salesStats.totalEarnings,
       messages: 0 // Placeholder until messaging is implemented
     });
   } catch (err) {
+    console.error("Error fetching vendor stats:", err);
     res.status(500).json({ message: "Server error fetching vendor stats" });
   }
 });
@@ -118,7 +135,8 @@ router.put('/:id', ensureAuthenticated, vendorApprovedOnly, async (req, res) => 
       location,
       image,
       images,
-      status
+      status,
+      quantity
     } = req.body;
 
     product.title = title || product.title;
@@ -131,6 +149,7 @@ router.put('/:id', ensureAuthenticated, vendorApprovedOnly, async (req, res) => 
     product.image = image || product.image;
     product.images = images || product.images;
     product.status = status || product.status;
+    product.quantity = quantity || product.quantity;
 
     await product.save();
 

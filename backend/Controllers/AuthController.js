@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../Models/user");
 const crypto = require("crypto");
+const ProductModel = require("../Models/products");
 const transporter = require("../Utils/emailConfig");
 
 const signup = async (req, res) => {
@@ -197,12 +198,116 @@ const approveVendor = async (req, res) => {
   vendor.isVendorApproved = true
   await vendor.save()
 
-  res.json({ message: 'Vendor approved' })
+  // Send Approval Email
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: vendor.email,
+      subject: "Welcome to DosroDeal! Your Vendor Account is Approved",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #22c55e; text-align: center;">Congratulations!</h2>
+          <p>Hi ${vendor.name},</p>
+          <p>We are excited to inform you that your registration as a vendor on <strong>DosroDeal</strong> has been approved!</p>
+          <p>You can now log in to your vendor dashboard to start listing your products and managing your shop.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL}/vendor/login" style="background-color: #22c55e; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Go to Dashboard</a>
+          </div>
+          <p>If you have any questions, feel free to reach out to our support team.</p>
+          <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+          <p style="font-size: 12px; color: #888; text-align: center;">&copy; 2026 DosroDeal. All rights reserved.</p>
+        </div>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+  } catch (emailErr) {
+    console.error("Failed to send approval email:", emailErr);
+  }
+
+  res.json({ message: 'Vendor approved and notified via email' })
 }
 
 const declineVendor = async (req, res) => {
+  const vendor = await UserModel.findById(req.params.id);
+  if (!vendor) return res.status(404).json({ message: "Vendor not found" });
+
+  const vendorEmail = vendor.email;
+  const vendorName = vendor.name;
+
+  // Send Decline Email
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: vendorEmail,
+      subject: "Update on Your DosroDeal Vendor Registration",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #ef4444; text-align: center;">Vendor Registration Update</h2>
+          <p>Hi ${vendorName},</p>
+          <p>Thank you for your interest in selling on <strong>DosroDeal</strong>.</p>
+          <p>After reviewing your application, we regret to inform you that your vendor registration was not approved at this time.</p>
+          <p>We appreciate your time and effort in applying to join our platform.</p>
+          <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+          <p style="font-size: 12px; color: #888; text-align: center;">&copy; 2026 DosroDeal. All rights reserved.</p>
+        </div>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+  } catch (emailErr) {
+    console.error("Failed to send decline email:", emailErr);
+  }
+
   await UserModel.findByIdAndDelete(req.params.id)
   res.json({ message: 'Vendor declined and removed' })
+}
+
+const removeVendor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const vendor = await UserModel.findById(id);
+
+    if (!vendor || vendor.role !== 'vendor') {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    const vendorEmail = vendor.email;
+    const vendorName = vendor.name;
+
+    // 1. Send Account Removal Email
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: vendorEmail,
+        subject: "Your DosroDeal Vendor Account has been Removed",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <h2 style="color: #ef4444; text-align: center;">Account Terminated</h2>
+            <p>Hi ${vendorName},</p>
+            <p>We are writing to inform you that your vendor account on <strong>DosroDeal</strong> has been removed by the administration.</p>
+            <p>Consequently, all your listed products have been taken down and your access to the vendor portal has been revoked.</p>
+            <p>If you believe this was an error, please contact our support team.</p>
+            <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+            <p style="font-size: 12px; color: #888; text-align: center;">&copy; 2026 DosroDeal. All rights reserved.</p>
+          </div>
+        `,
+      };
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error("Failed to send removal email:", emailErr);
+    }
+
+    // 2. Delete all products of this vendor
+    await ProductModel.deleteMany({ vendorId: id });
+
+    // 3. Delete vendor user record
+    await UserModel.findByIdAndDelete(id);
+
+    res.json({ message: 'Vendor and associated products removed successfully' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 }
 
 const getCurrentUser = async (req, res) => {
@@ -471,6 +576,7 @@ module.exports = {
   getAllUsers,
   getUserStats,
   suspendUser,
+  removeVendor,
   updateProfile,
   forgotPassword,
   verifyOTP,

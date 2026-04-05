@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { SearchBar } from '../components/SearchBar'
 import { mockProducts } from '../data/mockData'
@@ -18,12 +18,21 @@ export function Categories() {
 
   const [products, setProducts] = useState([])
 
-  const [filters, setFilters] = useState({
-    minPrice: 0,
-    maxPrice: 100000,
-    condition: [],
-    category: [],
-  })
+  const location = useLocation()
+  
+  // Parse initial filters from URL on component mount
+  const getInitialFilters = () => {
+    const queryParams = new URLSearchParams(location.search)
+    const categoryParam = queryParams.get('category')
+    return {
+      minPrice: 0,
+      maxPrice: 100000,
+      condition: [],
+      category: categoryParam ? [categoryParam] : [],
+    }
+  }
+
+  const [filters, setFilters] = useState(getInitialFilters())
 
   const toggleWishlist = (productId) => {
     setWishlist((prev) =>
@@ -117,7 +126,8 @@ export function Categories() {
               <FilterSidebar
                 isOpen={true}
                 onClose={() => setShowFilters(false)}
-                onApply={setFilters}   // 🔥 THIS IS CRITICAL
+                onApply={setFilters}
+                initialFilters={filters}
               />
             </div>
           </div>

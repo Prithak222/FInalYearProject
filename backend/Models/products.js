@@ -14,6 +14,11 @@ const productSchema = new mongoose.Schema({
     location: String,
     image: String,
     images: [String],
+    quantity: {
+        type: Number,
+        default: 1,
+        min: 1
+    },
     vendor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

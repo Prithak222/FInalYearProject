@@ -13,7 +13,6 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { ProductCard } from '../components/ProductCard'
-import heroBg from '../assets/hero-bg.png'
 
 export function Home() {
   const { isLoggedIn, userRole } = useAuth()
@@ -39,7 +38,8 @@ export function Home() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setProducts(data.slice(0, 6))
+          // Increase limit to show more products
+          setProducts(data.slice(0, 20))
           // Pick a random product for the hero card
           const random = data[Math.floor(Math.random() * data.length)]
           setFeaturedHeroProduct(random)
@@ -83,82 +83,40 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] pb-20 overflow-x-hidden">
-      {/* Hero Section */}
-      <div className="relative h-[95vh] w-full flex items-center pt-24">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={heroBg} 
-            alt="Hero Background" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent"></div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="max-w-2xl">
-            <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-[0.95] tracking-tighter drop-shadow-2xl">
-              A second life <br />
-              <span className="italic font-light">makes it real</span>
-            </h1>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-6 mb-12">
+      {/* Hero Section - Blue Box Promo */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10">
+        <div className="bg-gradient-to-r from-slate-900 to-[#1e3a8a] rounded-[3rem] p-10 md:p-20 flex flex-col items-center justify-center text-center relative overflow-hidden group shadow-2xl">
+          {/* Background effects */}
+          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[400px] h-[400px] bg-primary/20 blur-[100px] rounded-full group-hover:scale-110 transition-transform duration-1000"></div>
+          
+          <div className="relative z-10 max-w-3xl">
+            <span className="text-primary font-black uppercase tracking-[0.4em] text-[10px] mb-6 block">Featured Selection</span>
+            <h2 className="text-4xl md:text-7xl font-black text-white mb-6 leading-[1.05] tracking-tighter">
+              Elevate Your <br />
+              <span className="text-primary italic font-light">Audio Journey</span>
+            </h2>
+            <p className="text-slate-300 mb-10 text-lg font-medium leading-relaxed max-w-2xl mx-auto">
+              Experience sound in its purest form. Discover high-quality, pre-loved treasures or give your items a new home.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link
                 to="/register"
-                className="btn-premium px-12 py-5 text-lg"
+                className="btn-premium px-12 py-5 bg-white text-black hover:bg-slate-100 shadow-2xl shadow-white/10 w-full sm:w-auto"
               >
                 Get Started
               </Link>
-              <p className="text-white/90 text-lg font-medium max-w-xs drop-shadow-md">
-                Find unique pre-loved treasures or give your items a new home. No hidden fees.
-              </p>
+              <Link
+                to="/categories"
+                className="px-12 py-5 border border-white/20 text-white font-bold rounded-full hover:bg-white/5 transition-all text-lg w-full sm:w-auto text-center"
+              >
+                Browse Items
+              </Link>
             </div>
           </div>
         </div>
-
-        {/* Featured Floating Card */}
-        {featuredHeroProduct && (
-          <div className="absolute bottom-12 right-12 z-20 hidden lg:block animate-float">
-            <div className="glass-card w-80 group overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Featured Piece</span>
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-              </div>
-              
-              <Link to={`/product/${featuredHeroProduct._id}`} className="block relative h-40 rounded-xl overflow-hidden mb-4 group/img">
-                <img 
-                  src={featuredHeroProduct.image} 
-                  alt={featuredHeroProduct.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-3 left-3">
-                  <p className="text-lg font-bold text-white leading-tight">{featuredHeroProduct.title}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-white/80 bg-white/10 px-2 py-0.5 rounded backdrop-blur-sm border border-white/10">
-                      {featuredHeroProduct.category?.name || 'Curated'}
-                    </span>
-                    <span className="text-[10px] font-black text-primary uppercase">Rs. {featuredHeroProduct.price}</span>
-                  </div>
-                </div>
-              </Link>
-
-              <div 
-                onClick={handleNextFeatured}
-                className="flex items-center justify-between group/btn cursor-pointer"
-              >
-                <h3 className="text-2xl font-black italic tracking-tighter">Refresh</h3>
-                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover/btn:border-primary group-hover/btn:bg-primary transition-all">
-                  <ArrowRightIcon className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                </div>
-              </div>
-              <p className="text-sm text-white/60 mt-2 font-medium">Explore our curated selection for 2024</p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Categories Section */}
+      {/* Browse by Collection Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
           <div className="max-w-xl">
@@ -198,33 +156,32 @@ export function Home() {
         </div>
       </div>
 
-      {/* Featured Items Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 bg-white rounded-[4rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.05)] border border-slate-50">
-        <div className="flex flex-col items-center text-center mb-20">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4">Hand-Picked</span>
-          <h2 className="text-5xl font-black text-slate-900 tracking-tight">Featured Selection</h2>
+      {/* Recommended for You Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2 block">Curated Just For You</span>
+            <h2 className="text-4xl font-black text-slate-900 tracking-tight">Recommended <span className="italic font-light">for you</span></h2>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center opacity-50 cursor-not-allowed">
+              <ArrowRightIcon className="w-4 h-4 rotate-180" />
+            </div>
+            <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-all cursor-pointer">
+              <ArrowRightIcon className="w-4 h-4" />
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {loading ? (
-            <div className="col-span-full py-20 flex justify-center">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : products.length > 0 ? (
-            products.map((product, index) => (
-              <div key={product._id} className={index === 0 ? "lg:col-span-2 lg:row-span-2" : ""}>
-                 <ProductCard
-                  product={product}
-                  onWishlistToggle={toggleWishlist}
-                  isWishlisted={wishlist.includes(product._id)}
-                />
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-20 text-muted-foreground font-medium">
-              Our shelves are currently being restocked. Check back soon!
-            </div>
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              onWishlistToggle={toggleWishlist}
+              isWishlisted={wishlist.includes(product._id)}
+            />
+          ))}
         </div>
       </div>
 

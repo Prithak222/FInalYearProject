@@ -6,6 +6,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
+  Trash2Icon,
 } from 'lucide-react'
 
 export function Vendors() {
@@ -44,6 +45,38 @@ export function Vendors() {
         setLoading(false)
       })
   }, [])
+
+  const handleDeleteVendor = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently remove this vendor? All their products will also be deleted.')) {
+      return
+    }
+
+    const token = sessionStorage.getItem('token')
+    try {
+      const res = await fetch(`http://localhost:5000/auth/admin/vendors/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        setVendors(vendors.filter(v => v._id !== id))
+        // Refresh stats
+        const statsRes = await fetch('http://localhost:5000/auth/admin/vendors/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (statsRes.ok) {
+          const sData = await statsRes.json()
+          setStats(sData)
+        }
+      } else {
+        const err = await res.json()
+        alert(err.message || 'Failed to remove vendor')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Server error')
+    }
+  }
 
   return (
     // ⬇️ padding-top prevents navbar overlap
@@ -92,6 +125,7 @@ export function Vendors() {
                   <TableHead>Owner</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </tr>
               </thead>
 
@@ -120,6 +154,16 @@ export function Vendors() {
 
                     <td className="px-6 py-4 text-muted-foreground">
                       {new Date(vendor.createdAt).toLocaleDateString()}
+                    </td>
+
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDeleteVendor(vendor._id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove Vendor"
+                      >
+                        <Trash2Icon className="w-5 h-5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
