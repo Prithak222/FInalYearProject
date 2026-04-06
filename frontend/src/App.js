@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Navbar } from './components/navbar'
 import { VendorNavbarWrapper } from './components/VendorNavBarWrapper'
 import { AdminNavbarWrapper } from './components/AdminNavbarWrapper'
+import { FooterWrapper } from './components/FooterWrapper'
 import { Home } from './pages/home'
 import { Login } from './pages/login'
 import { Register } from './pages/register'
@@ -19,6 +20,7 @@ import { PostItem, PostItem as VendorPost } from './pages/vendor/VendorPost'
 import { VendorProfile } from './pages/vendor/VendorProfile'
 import { default as VendorOrders } from './pages/vendor/VendorOrder'
 import VendorEarnings from './pages/vendor/VendorEarning'
+import VendorVerification from './pages/vendor/VendorVerification'
 import { AdminDashboard } from './pages/admin/adminDashboard'
 import { Users } from './pages/admin/user'
 import { Vendors } from './pages/admin/vendor'
@@ -26,6 +28,7 @@ import { Verification } from './pages/admin/verification'
 import Listings from './pages/admin/listing'
 import Payments from './pages/admin/payment'
 import { Reports } from './pages/admin/Reports'
+import PayoutManagement from './pages/admin/PayoutManagement'
 import { Profile } from './pages/Profile'
 import { ProductDetail } from './pages/ProductDetail'
 import { ShopDetail } from './pages/ShopDetail'
@@ -234,6 +237,14 @@ function App() {
             }
           />
           <Route
+            path="/vendor/verification"
+            element={
+              <ProtectedRoute allowedRole="vendor">
+                <VendorVerification />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/vendor/earnings"
             element={
               <ProtectedRoute allowedRole="vendor">
@@ -299,7 +310,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/payouts"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <PayoutManagement />
+              </ProtectedRoute>
+            }
+          />
           </Routes>
+          <FooterWrapper />
         </BrowserRouter>
       </ToastProvider>
     </SocketProvider>

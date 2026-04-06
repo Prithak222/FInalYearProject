@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingBag, Package, ChevronRight, Calendar, Clock, MapPin, Search } from 'lucide-react'
+import { ShoppingBag, Package, ChevronRight, Calendar, Clock, MapPin, Search, XCircle, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 export function MyOrders() {
   const { isLoggedIn } = useAuth()
+  const { showToast } = useToast()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -27,8 +29,36 @@ export function MyOrders() {
       }
     } catch (err) {
       console.error('Error fetching orders:', err)
+      showToast('Failed to fetch orders', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) {
+      return
+    }
+
+    const token = sessionStorage.getItem('token')
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders/cancel/${orderId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('Order cancelled successfully', 'success')
+        fetchOrders()
+      } else {
+        showToast(data.message || 'Failed to cancel order', 'error')
+      }
+    } catch (err) {
+      console.error('Error cancelling order:', err)
+      showToast('Server error cancelling order', 'error')
     }
   }
 
@@ -152,6 +182,16 @@ export function MyOrders() {
                         <span>View One Item</span>
                         <ChevronRight className="w-4 h-4" />
                       </Link>
+
+                      {(order.orderStatus.toLowerCase() === 'pending' || order.orderStatus.toLowerCase() === 'processing') && (
+                        <button 
+                          onClick={() => handleCancelOrder(order._id)}
+                          className="w-full py-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-all flex items-center justify-center space-x-2 shadow-sm"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span>Cancel Order</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

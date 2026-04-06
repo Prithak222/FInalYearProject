@@ -176,7 +176,11 @@ export default function VendorOrders() {
                       </p>
                       <div className="flex items-center space-x-2 mt-4">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                          order.orderStatus.toLowerCase() === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                          order.orderStatus.toLowerCase() === 'pending' ? 'bg-amber-100 text-amber-700' : 
+                          order.orderStatus.toLowerCase() === 'processing' ? 'bg-indigo-100 text-indigo-700' :
+                          order.orderStatus.toLowerCase() === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                          order.orderStatus.toLowerCase() === 'delivered' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-red-100 text-red-700'
                         }`}>
                           {order.orderStatus}
                         </span>
@@ -217,11 +221,31 @@ export default function VendorOrders() {
                       </button>
                       {order.orderStatus.toLowerCase() === 'pending' && (
                         <button 
-                          onClick={() => handleUpdateStatus(order._id, 'Shipped')}
-                          className="flex items-center space-x-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all"
+                          onClick={() => handleUpdateStatus(order._id, 'Processing')}
+                          className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
                         >
-                          <CheckCircleIcon className="w-4 h-4 text-green-400" />
+                          <ClockIcon className="w-4 h-4" />
+                          <span>Process Order</span>
+                        </button>
+                      )}
+                      
+                      {order.orderStatus.toLowerCase() === 'processing' && (
+                        <button 
+                          onClick={() => handleUpdateStatus(order._id, 'Shipped')}
+                          className="flex items-center space-x-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-100"
+                        >
+                          <PackageIcon className="w-4 h-4" />
                           <span>Confirm Shipment</span>
+                        </button>
+                      )}
+
+                      {order.orderStatus.toLowerCase() === 'shipped' && (
+                        <button 
+                          onClick={() => handleUpdateStatus(order._id, 'Delivered')}
+                          className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100"
+                        >
+                          <CheckCircleIcon className="w-4 h-4" />
+                          <span>Mark Delivered</span>
                         </button>
                       )}
                     </div>

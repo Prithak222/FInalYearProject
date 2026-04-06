@@ -75,6 +75,19 @@ const userSchema = new Schema({
   resetOTP: { type: String },
   resetOTPExpires: { type: Date },
 
+  // Verification Details (Vendor)
+  verificationStatus: { 
+    type: String, 
+    enum: ['Not Submitted', 'Pending', 'Verified', 'Rejected'], 
+    default: 'Not Submitted' 
+  },
+  verificationDocs: {
+    citizenshipFront: { type: String, default: "" },
+    citizenshipBack: { type: String, default: "" },
+    businessLicense: { type: String, default: "" }
+  },
+  rejectionReason: { type: String, default: "" },
+
 }, { timestamps: true })
 
 const UserModel = mongoose.model('User', userSchema)

@@ -8,6 +8,7 @@ import {
   FlagIcon,
   ShieldCheckIcon,
   CreditCardIcon,
+  BanknoteIcon,
   LogOutIcon,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -28,6 +29,7 @@ export function AdminNavbar() {
     { path: '/admin/reports', label: 'Reports', icon: FlagIcon },
     { path: '/admin/verification', label: 'Verification', icon: ShieldCheckIcon },
     { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
+    { path: '/admin/payouts', label: 'Payouts', icon: BanknoteIcon },
   ]
 
   const handleLogout = () => {

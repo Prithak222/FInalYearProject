@@ -92,11 +92,11 @@ export function Home() {
           <div className="relative z-10 max-w-3xl">
             <span className="text-primary font-black uppercase tracking-[0.4em] text-[10px] mb-6 block">Featured Selection</span>
             <h2 className="text-4xl md:text-7xl font-black text-white mb-6 leading-[1.05] tracking-tighter">
-              Elevate Your <br />
-              <span className="text-primary italic font-light">Audio Journey</span>
+              Give it  <br />
+              <span className="text-primary italic font-light">a second life</span>
             </h2>
             <p className="text-slate-300 mb-10 text-lg font-medium leading-relaxed max-w-2xl mx-auto">
-              Experience sound in its purest form. Discover high-quality, pre-loved treasures or give your items a new home.
+              Give it a second chance. Discover high-quality, pre-loved treasures or give your items a new home.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link

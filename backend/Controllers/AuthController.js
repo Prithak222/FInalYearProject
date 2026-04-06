@@ -196,6 +196,7 @@ const approveVendor = async (req, res) => {
   }
 
   vendor.isVendorApproved = true
+  vendor.verificationStatus = 'Verified'
   await vendor.save()
 
   // Send Approval Email
@@ -558,6 +559,82 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const submitVendorVerification = async (req, res) => {
+  try {
+    const { citizenshipFront, citizenshipBack, businessLicense } = req.body;
+    const vendorId = req.user._id;
+
+    const vendor = await UserModel.findById(vendorId);
+    if (!vendor || vendor.role !== 'vendor') {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    vendor.verificationDocs = {
+      citizenshipFront: citizenshipFront || "",
+      citizenshipBack: citizenshipBack || "",
+      businessLicense: businessLicense || ""
+    };
+    vendor.verificationStatus = 'Pending';
+    vendor.rejectionReason = "";
+
+    await vendor.save();
+
+    res.status(200).json({
+      message: 'Verification documents submitted successfully. Admin will review them.',
+      success: true,
+      user: vendor
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+const rejectVendorVerification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const vendor = await UserModel.findById(id);
+    if (!vendor || vendor.role !== 'vendor') {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    vendor.verificationStatus = 'Rejected';
+    vendor.rejectionReason = reason || "Documents provided are invalid or unclear.";
+    // Keep isVendorApproved as false
+    await vendor.save();
+
+    // Optional: Send Rejection Email
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: vendor.email,
+        subject: "Verification Update on Your DosroDeal Vendor Account",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+            <h2 style="color: #ef4444; text-align: center;">Verification Rejected</h2>
+            <p>Hi ${vendor.name},</p>
+            <p>We have reviewed your verification documents and unfortunately, we could not verify your account at this time.</p>
+            <p><strong>Reason:</strong> ${vendor.rejectionReason}</p>
+            <p>Please log in to your dashboard, re-upload the correct documents, and submit for verification again.</p>
+            <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+            <p style="font-size: 12px; color: #888; text-align: center;">&copy; 2026 DosroDeal. All rights reserved.</p>
+          </div>
+        `,
+      };
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error("Failed to send rejection email:", emailErr);
+    }
+
+    res.json({ message: 'Vendor verification rejected and notified' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -581,4 +658,6 @@ module.exports = {
   forgotPassword,
   verifyOTP,
   resetPassword,
+  submitVendorVerification,
+  rejectVendorVerification,
 };

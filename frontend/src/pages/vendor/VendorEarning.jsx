@@ -1,38 +1,55 @@
 import React, { useState } from 'react'
-import { DollarSignIcon, TrendingUpIcon, DownloadIcon, CalendarIcon } from 'lucide-react'
+import { DollarSignIcon, TrendingUpIcon, DownloadIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, ClockIcon, InfoIcon } from 'lucide-react'
 
 export default function VendorEarnings() {
   const [earnings, setEarnings] = useState([])
+  const [payouts, setPayouts] = useState([])
   const [loading, setLoading] = useState(true)
 
   React.useEffect(() => {
-    const fetchEarnings = async () => {
+    const fetchData = async () => {
       const token = sessionStorage.getItem('token')
       try {
-        const res = await fetch('http://localhost:5000/api/orders/vendor-orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setEarnings(data || [])
+        const [ordersRes, payoutsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/orders/vendor-orders', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('http://localhost:5000/api/payouts/my-payouts', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ])
+
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json()
+          setEarnings(ordersData || [])
+        }
+        if (payoutsRes.ok) {
+          const payoutsData = await payoutsRes.json()
+          setPayouts(payoutsData || [])
         }
       } catch (err) {
-        console.error('Error fetching vendor earnings:', err)
+        console.error('Error fetching data:', err)
       } finally {
         setLoading(false)
       }
     }
-    fetchEarnings()
+    fetchData()
   }, [])
 
   const handleRequestPayout = async () => {
-    if (pendingEarnings <= 0) {
-      alert('No pending earnings available for payout.')
+    if (availablePayout <= 0) {
+      alert('No earnings available for payout.')
       return
     }
 
-    const bankInfo = prompt('Please enter your Bank Details (Name, A/C No, Bank Name):')
-    if (!bankInfo) return
+    const accountName = prompt('Enter Bank Account Name:')
+    if (!accountName) return
+    const accountNumber = prompt('Enter Bank Account Number:')
+    if (!accountNumber) return
+    const bankName = prompt('Enter Bank Name:')
+    if (!bankName) return
+    const branch = prompt('Enter Bank Branch:')
+    if (!branch) return
 
     const token = sessionStorage.getItem('token')
     try {
@@ -43,16 +60,18 @@ export default function VendorEarnings() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          amount: pendingEarnings,
+          amount: availablePayout,
           bankDetails: {
-            bankName: bankInfo // Simplified for now
+            accountName,
+            accountNumber,
+            bankName,
+            branch
           }
         })
       })
 
       if (res.ok) {
         alert('Payout request submitted successfully!')
-        // Refresh data or update local state
         window.location.reload()
       } else {
         const error = await res.json()
@@ -64,36 +83,45 @@ export default function VendorEarnings() {
     }
   }
 
-  const totalEarnings = earnings.reduce((sum, e) => sum + (e.vendorEarning || 0), 0)
-  const paidEarnings = earnings
-    .filter((e) => e.paymentStatus === 'Completed')
-    .reduce((sum, e) => sum + (e.vendorEarning || 0), 0)
-  const pendingEarnings = earnings
-    .filter((e) => e.paymentStatus === 'Pending')
-    .reduce((sum, e) => sum + (e.vendorEarning || 0), 0)
-  const avgPerSale = earnings.length > 0 ? totalEarnings / earnings.length : 0
+  // --- Logic ---
+  // 1. Total Earned = Delivered Orders
+  const deliveredOrders = earnings.filter(e => e.orderStatus === 'Delivered')
+  const totalEarned = deliveredOrders.reduce((sum, e) => sum + (e.vendorEarning || 0), 0)
+
+  // 2. Total Requested = All PayoutRequests (Pending or Approved)
+  const totalRequestedPayouts = payouts
+    .filter(p => p.status === 'Pending' || p.status === 'Approved')
+    .reduce((sum, p) => sum + (p.amount || 0), 0)
+
+  // 3. Available for Payout
+  const availablePayout = totalEarned - totalRequestedPayouts
+
+  // Total Lifetime Sales (all completed orders)
+  const totalLifetimeSales = earnings.reduce((sum, e) => sum + (e.vendorEarning || 0), 0)
+  
+  const avgPerSale = earnings.length > 0 ? totalLifetimeSales / earnings.length : 0
 
   const stats = [
     {
-      label: 'Total Earnings',
-      value: `Rs. ${totalEarnings.toLocaleString()}`,
-      badge: null,
+      label: 'Balance Earned',
+      value: `Rs. ${totalEarned.toLocaleString()}`,
+      badge: 'Delivered',
       icon: DollarSignIcon,
       color: '#22c55e',
       bg: '#f0fdf4',
     },
     {
-      label: 'Completed Sales',
-      value: `Rs. ${paidEarnings.toLocaleString()}`,
+      label: 'Requested/Paid',
+      value: `Rs. ${totalRequestedPayouts.toLocaleString()}`,
       badge: null,
       icon: TrendingUpIcon,
       color: '#3b82f6',
       bg: '#eff6ff',
     },
     {
-      label: 'Pending Payouts',
-      value: `Rs. ${pendingEarnings.toLocaleString()}`,
-      badge: null,
+      label: 'Available Balance',
+      value: `Rs. ${availablePayout.toLocaleString()}`,
+      badge: 'Ready',
       icon: CalendarIcon,
       color: '#f59e0b',
       bg: '#fffbeb',
@@ -416,7 +444,7 @@ export default function VendorEarnings() {
             </button>
           </div>
 
-          {/* Table */}
+          {/* Transaction History Table */}
           <div className="ve-table-card">
             <div className="ve-table-header">
               <h2>Transaction History</h2>
@@ -469,8 +497,60 @@ export default function VendorEarnings() {
             </div>
           </div>
 
+          {/* Payout History Table */}
+          <div className="ve-table-card" style={{ marginTop: '40px' }}>
+            <div className="ve-table-header">
+              <h2>Payout History</h2>
+              <span className="ve-table-count">{payouts.length} requests</span>
+            </div>
+            <div className="ve-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Bank Details</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payouts.map((p) => (
+                    <tr key={p._id}>
+                      <td className="td-date">{new Date(p.requestDate).toLocaleDateString()}</td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111' }}>{p.bankDetails?.bankName}</span>
+                          <span style={{ fontSize: '0.7rem', color: '#888' }}>{p.bankDetails?.accountNumber}</span>
+                        </div>
+                      </td>
+                      <td className="td-net">Rs. {p.amount.toLocaleString()}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className={`badge ${
+                            p.status === 'Approved' ? 'badge-paid' : 
+                            p.status === 'Rejected' ? 'badge-pending' : 
+                            'badge-pending'
+                          }`} style={p.status === 'Rejected' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : {}}>
+                            {p.status}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {payouts.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                        No payout requests yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
     </>
   )
-}
+}
