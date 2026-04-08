@@ -217,7 +217,20 @@ export function ProductDetail() {
                  <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-xl rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl">
                     {product.condition}
                  </span>
+                 {product.status === 'sold' && (
+                   <span className="px-5 py-2 bg-red-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl animate-pulse">
+                     SOLD
+                   </span>
+                 )}
               </div>
+
+              {product.status === 'sold' && (
+                <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px] z-[5] flex items-center justify-center">
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 px-10 py-4 rounded-3xl rotate-[-12deg] shadow-2xl">
+                    <span className="text-white text-5xl font-black uppercase tracking-[0.3em]">SOLD</span>
+                  </div>
+                </div>
+              )}
 
               {/* Verified Product Float */}
               <div className="absolute bottom-8 right-8 px-5 py-3 bg-white/90 backdrop-blur-xl rounded-[2rem] border border-white shadow-2xl flex items-center space-x-3">
@@ -299,22 +312,27 @@ export function ProductDetail() {
               <div className="grid grid-cols-1 gap-4">
                 <button
                   onClick={handleAddToCart}
+                  disabled={product.status === 'sold'}
                   className={`group relative w-full py-6 rounded-2xl font-black text-lg transition-all active:scale-[0.98] shadow-2xl flex items-center justify-center space-x-3 overflow-hidden ${
-                    addedToCart
+                    product.status === 'sold'
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                      : addedToCart
                       ? 'bg-green-500 text-white shadow-green-200'
                       : inCart
                       ? 'bg-slate-900 text-white shadow-slate-200'
                       : 'bg-primary text-white shadow-primary/30 hover:shadow-primary/50'
                   }`}
                 >
-                  {addedToCart ? (
+                  {product.status === 'sold' ? (
+                    <AlertCircle className="w-6 h-6" />
+                  ) : addedToCart ? (
                     <ShieldCheckIcon className="w-6 h-6 animate-bounce" />
                   ) : inCart ? (
                     <ShoppingCartIcon className="w-6 h-6" />
                   ) : (
                     <ShoppingCartIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                   )}
-                  <span>{addedToCart ? 'Product Secured' : inCart ? 'View in Cart' : 'Secure This Deal'}</span>
+                  <span>{product.status === 'sold' ? 'Item Already Sold' : addedToCart ? 'Product Secured' : inCart ? 'View in Cart' : 'Secure This Deal'}</span>
                 </button>
 
                 <button
@@ -432,9 +450,14 @@ export function ProductDetail() {
          </button>
          <button 
            onClick={handleAddToCart}
-           className="flex-1 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 active:scale-95"
+           disabled={product.status === 'sold'}
+           className={`flex-1 py-4 font-black rounded-2xl shadow-xl active:scale-95 transition-all ${
+             product.status === 'sold' 
+               ? 'bg-slate-200 text-slate-400 font-bold shadow-none' 
+               : 'bg-primary text-white shadow-primary/20'
+           }`}
          >
-           {inCart ? 'View Cart' : 'Reserve Deal'}
+           {product.status === 'sold' ? 'SOLD OUT' : inCart ? 'View Cart' : 'Reserve Deal'}
          </button>
       </div>
 

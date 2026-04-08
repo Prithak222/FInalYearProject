@@ -192,7 +192,7 @@ router.delete('/:id', ensureAuthenticated, vendorApprovedOnly, async (req, res) 
 // 🔍 Get all products with filters (Public)
 router.get("/", async (req, res) => {
   try {
-    const { minPrice, maxPrice, condition, category, vendor } = req.query;
+    const { minPrice, maxPrice, condition, category, vendor, search } = req.query;
 
     let filter = { $or: [{ status: 'active' }, { status: { $exists: false } }] };
 
@@ -216,6 +216,11 @@ router.get("/", async (req, res) => {
     // Category filter
     if (category) {
       filter.category = { $in: category.split(",") };
+    }
+
+    // Keyword search filter
+    if (search) {
+      filter.title = { $regex: search, $options: "i" };
     }
 
     const products = await Product.find(filter).populate('vendor', 'name shopName shopLogo').populate('category', 'name icon');

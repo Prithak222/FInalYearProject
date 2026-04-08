@@ -29,6 +29,7 @@ export function Categories() {
       maxPrice: 100000,
       condition: [],
       category: categoryParam ? [categoryParam] : [],
+      search: '',
     }
   }
 
@@ -52,11 +53,22 @@ export function Categories() {
     if (maxPrice) query.set('maxPrice', maxPrice)
     if (condition.length > 0) query.set('condition', condition.join(','))
     if (category.length > 0) query.set('category', category.join(','))
+    if (filters.search) query.set('search', filters.search)
 
     fetch(`http://localhost:5000/api/products?${query.toString()}`)
       .then(res => res.json())
       .then(data => {
-        setProducts(Array.isArray(data) ? data : [])
+        if (Array.isArray(data)) {
+          // Sort: Active items first, Sold items at the bottom
+          const sortedProducts = [...data].sort((a, b) => {
+            if (a.status === 'sold' && b.status !== 'sold') return 1;
+            if (a.status !== 'sold' && b.status === 'sold') return -1;
+            return 0;
+          });
+          setProducts(sortedProducts)
+        } else {
+          setProducts([])
+        }
         setLoading(false)
       })
       .catch(err => {
@@ -79,6 +91,7 @@ export function Categories() {
           <div className="max-w-2xl">
             <SearchBar
               placeholder="What are you searching for?"
+              onSearch={(query) => setFilters(prev => ({ ...prev, search: query }))}
               onFilterClick={() => setShowFilters(!showFilters)}
             />
           </div>

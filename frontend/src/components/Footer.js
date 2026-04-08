@@ -90,8 +90,8 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-xs font-medium text-slate-500 uppercase tracking-widest">
           <p>© {currentYear} DosroDeal. All rights reserved.</p>
           <div className="flex items-center space-x-8">
-            <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
             <Link to="#" className="hover:text-white transition-colors">Cookies</Link>
           </div>
         </div>

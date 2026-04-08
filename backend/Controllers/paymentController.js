@@ -1,6 +1,7 @@
 const Order = require("../Models/Order");
 const Cart = require("../Models/cart");
 const Payment = require("../Models/Payment");
+const Product = require("../Models/products");
 const { generateSignature, verifyEsewaStatus } = require("../Utils/esewa");
 
 const initializeEsewa = async (req, res) => {
@@ -154,6 +155,18 @@ const completePayment = async (req, res) => {
 
         await newPaymentRecord.save();
         console.log(`Successfully saved payment record for transaction ${transaction_uuid}`);
+
+        // Mark products as SOLD and set quantity to 0
+        const ordersForUpdate = await Order.find({ transactionUuid: transaction_uuid });
+        for (const order of ordersForUpdate) {
+            for (const item of order.items) {
+                await Product.findByIdAndUpdate(item.productId, {
+                    status: 'sold',
+                    quantity: 0
+                });
+            }
+        }
+        console.log(`Successfully marked items as SOLD for transaction ${transaction_uuid}`);
 
         // Redirect to success page (optionally pass the transaction UUID or just a generic success)
         res.redirect(`${process.env.FRONTEND_URL}/order-success?transactionId=${transaction_uuid}`);

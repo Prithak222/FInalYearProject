@@ -22,20 +22,33 @@ export function ProductCard({
         to={productUrl}
         className="block relative aspect-[4/5] overflow-hidden bg-slate-50 sm:aspect-square md:aspect-[4/5]"
       >
-        <img
-          src={product.image || 'https://via.placeholder.com/400x500?text=No+Image'}
-          alt={product.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out"
-        />
-
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
+        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           <ConditionBadge condition={product.condition} />
-          {product.isNegotiable && (
+          {product.isNegotiable && product.status !== 'sold' && (
             <span className="bg-black/80 backdrop-blur-md text-[9px] font-black px-3 py-1 rounded-full shadow-sm text-white uppercase tracking-widest">
               Negotiable
             </span>
           )}
+          {product.status === 'sold' && (
+            <span className="bg-red-600 text-[10px] font-black px-3 py-1 rounded-full shadow-lg text-white uppercase tracking-widest border border-white/20">
+              SOLD
+            </span>
+          )}
         </div>
+
+        {product.status === 'sold' && (
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[5] flex items-center justify-center">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-2xl rotate-[-12deg] shadow-2xl">
+              <span className="text-white text-2xl font-black uppercase tracking-[0.2em]">SOLD</span>
+            </div>
+          </div>
+        )}
+
+        <img
+          src={product.image || 'https://via.placeholder.com/400x500?text=No+Image'}
+          alt={product.title}
+          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out ${product.status === 'sold' ? 'grayscale-[0.5]' : ''}`}
+        />
 
         <button
           onClick={(e) => {

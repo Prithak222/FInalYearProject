@@ -234,14 +234,22 @@ export function VendorRegister() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link
-              to="/vendor/login"
-              className="font-semibold text-primary hover:underline"
-            >
-              Sign in
-            </Link>
+          <div className="mt-6 text-center text-sm text-muted-foreground space-y-2">
+            <p>
+              Already have an account?{' '}
+              <Link
+                to="/vendor/login"
+                className="font-semibold text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+            <p>
+              By registering, you agree to our{' '}
+              <Link to="/privacy-policy" className="text-primary hover:underline font-medium">
+                Privacy Policy
+              </Link>
+            </p>
           </div>
         </div>
       </div>

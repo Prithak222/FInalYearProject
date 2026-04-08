@@ -132,11 +132,11 @@ const handleSubmit = async (e) => {
               />
               <span className="text-sm text-muted-foreground">
                 I agree to the{' '}
-                <Link to="/terms" className="text-primary hover:underline">
+                <Link to="/terms-of-service" className="text-primary hover:underline">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="/privacy" className="text-primary hover:underline">
+                <Link to="/privacy-policy" className="text-primary hover:underline">
                   Privacy Policy
                 </Link>
               </span>

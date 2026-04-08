@@ -31,6 +31,7 @@ export function Home() {
   const [dbCategories, setDbCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [featuredHeroProduct, setFeaturedHeroProduct] = useState(null)
+  const [visibleProducts, setVisibleProducts] = useState(8)
 
   useEffect(() => {
     // Fetch products
@@ -38,10 +39,19 @@ export function Home() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
+          // Sort: Active items first, Sold items at the bottom
+          const sortedProducts = [...data].sort((a, b) => {
+            if (a.status === 'sold' && b.status !== 'sold') return 1;
+            if (a.status !== 'sold' && b.status === 'sold') return -1;
+            return 0;
+          });
+
           // Increase limit to show more products
-          setProducts(data.slice(0, 20))
-          // Pick a random product for the hero card
-          const random = data[Math.floor(Math.random() * data.length)]
+          setProducts(sortedProducts.slice(0, 20))
+          // Pick a random product for the hero card (preferably an active one)
+          const activeProducts = sortedProducts.filter(p => p.status !== 'sold');
+          const heroPool = activeProducts.length > 0 ? activeProducts : sortedProducts;
+          const random = heroPool[Math.floor(Math.random() * heroPool.length)]
           setFeaturedHeroProduct(random)
         }
       })
@@ -174,7 +184,7 @@ export function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
+          {products.slice(0, visibleProducts).map((product) => (
             <ProductCard
               key={product._id}
               product={product}
@@ -182,6 +192,26 @@ export function Home() {
               isWishlisted={wishlist.includes(product._id)}
             />
           ))}
+        </div>
+
+        <div className="mt-16 text-center flex items-center justify-center gap-4">
+          {visibleProducts < products.length && (
+            <button
+              onClick={() => setVisibleProducts(prev => prev + 8)}
+              className="px-10 py-4 bg-white border border-slate-200 text-slate-900 font-black rounded-2xl hover:border-primary hover:text-primary transition-all shadow-sm hover:shadow-xl active:scale-95 uppercase tracking-[0.2em] text-xs"
+            >
+              Show More Treasures
+            </button>
+          )}
+
+          {visibleProducts > 8 && (
+            <button
+              onClick={() => setVisibleProducts(8)}
+              className="px-10 py-4 bg-slate-50 border border-slate-100 text-slate-400 font-black rounded-2xl hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-95 uppercase tracking-[0.2em] text-xs"
+            >
+              Show Less
+            </button>
+          )}
         </div>
       </div>
 

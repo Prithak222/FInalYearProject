@@ -3,6 +3,7 @@ import { Navbar } from './components/navbar'
 import { VendorNavbarWrapper } from './components/VendorNavBarWrapper'
 import { AdminNavbarWrapper } from './components/AdminNavbarWrapper'
 import { FooterWrapper } from './components/FooterWrapper'
+import ScrollToTop from './components/ScrollToTop'
 import { Home } from './pages/home'
 import { Login } from './pages/login'
 import { Register } from './pages/register'
@@ -42,6 +43,8 @@ import { MyOrders } from './pages/MyOrders'
 import { Messages } from './pages/Messages'
 import { VendorChat } from './pages/vendor/VendorChat'
 import PaymentHistory from './pages/Payment'
+import { PrivacyPolicy } from './pages/PrivacyPolicy'
+import { TermsOfService } from './pages/TermsOfService'
 
 
 function NavbarWrapper() {
@@ -95,6 +98,7 @@ function App() {
       <SocketProvider>
         <ToastProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <NavbarWrapper />
           <VendorNavbarWrapper /> {/* Vendor sidebar/navbar */}
           <AdminNavbarWrapper />
@@ -174,6 +178,10 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
 
 
           {/* Vendor routes */}
