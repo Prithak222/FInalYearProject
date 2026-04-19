@@ -1,8 +1,61 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingCartIcon, Trash2Icon, PackageIcon } from 'lucide-react'
+import { ShoppingCartIcon, Trash2Icon, PackageIcon, HeartIcon, X } from 'lucide-react'
+
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+
+function MoveToWishlistModal({ isOpen, onClose, onRemove, onMoveToWishlist, item }) {
+  if (!isOpen || !item) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div 
+        className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-6 pt-6 pb-2 flex justify-end">
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="px-8 pb-8 text-center">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Trash2Icon size={32} />
+            </div>
+          <h3 className="text-xl font-black text-slate-900 mb-2">Remove Item?</h3>
+          <p className="text-slate-500 text-sm font-medium mb-8 px-2">
+            Do you want to permanently remove <span className="font-bold text-slate-900">"{item.title}"</span> from your cart or save it to your wishlist for later?
+          </p>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => onMoveToWishlist(item._id)}
+              className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all active:scale-[0.98] flex items-center justify-center space-x-2"
+            >
+              <HeartIcon size={18} className="fill-current" />
+              <span>Move to Wishlist</span>
+            </button>
+            <button
+              onClick={() => onRemove(item._id)}
+              className="w-full py-4 bg-white text-red-500 border border-red-100 rounded-xl font-bold hover:bg-red-50 transition-all active:scale-[0.98]"
+            >
+              Remove Permanently
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-2 text-slate-400 font-bold hover:text-slate-600 transition-all text-sm"
+            >
+              Keep in Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 export function Cart() {
@@ -12,6 +65,9 @@ export function Cart() {
 
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showMoveModal, setShowMoveModal] = useState(false)
+  const [itemToMove, setItemToMove] = useState(null)
+
 
   const fetchCart = async () => {
     const token = sessionStorage.getItem('token')
@@ -36,7 +92,12 @@ export function Cart() {
     fetchCart()
   }, [isLoggedIn])
 
-  const handleRemove = async (productId) => {
+  const handleRemove = (product) => {
+    setItemToMove(product)
+    setShowMoveModal(true)
+  }
+
+  const executeRemove = async (productId) => {
     const token = sessionStorage.getItem('token')
     try {
       await fetch(`http://localhost:5000/api/cart/remove/${productId}`, {
@@ -45,11 +106,37 @@ export function Cart() {
       })
       setItems(items.filter(item => item.productId?._id !== productId))
       refreshCartCount()
-
+      setShowMoveModal(false)
+      showToast("Item removed from cart", "success")
     } catch (err) {
       console.error(err)
+      showToast("Failed to remove item", "error")
     }
   }
+
+  const handleMoveToWishlist = async (productId) => {
+    const token = sessionStorage.getItem('token')
+    try {
+      const res = await fetch(`http://localhost:5000/api/cart/move-to-wishlist/${productId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      
+      if (data.success) {
+        setItems(items.filter(item => item.productId?._id !== productId))
+        refreshCartCount()
+        setShowMoveModal(false)
+        showToast("Moved to wishlist!", "success")
+      } else {
+        showToast(data.message || "Failed to move item", "error")
+      }
+    } catch (err) {
+      console.error(err)
+      showToast("An error occurred", "error")
+    }
+  }
+
 
 
   const totalPrice = items.reduce((sum, item) => sum + (item.productId?.price * item.quantity || 0), 0)
@@ -112,12 +199,13 @@ export function Cart() {
                           Qty: 1
                         </div>
                         <button
-                          onClick={() => handleRemove(product._id)}
+                          onClick={() => handleRemove(product)}
                           className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider flex items-center"
                         >
                           <Trash2Icon className="w-3.5 h-3.5 mr-1" />
                           Remove
                         </button>
+
                       </div>
                     </div>
 
@@ -166,6 +254,15 @@ export function Cart() {
           </div>
         )}
       </div>
+
+      <MoveToWishlistModal
+        isOpen={showMoveModal}
+        item={itemToMove}
+        onClose={() => setShowMoveModal(false)}
+        onRemove={executeRemove}
+        onMoveToWishlist={handleMoveToWishlist}
+      />
     </div>
   )
 }
+

@@ -1,4 +1,6 @@
 const Cart = require("../Models/cart");
+const Wishlist = require("../Models/wishlist");
+
 
 const getCart = async (req, res) => {
     try {
@@ -88,9 +90,43 @@ const updateQuantity = async (req, res) => {
     }
 };
 
+const moveToWishlist = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const userId = req.user._id;
+
+        // 1. Remove from Cart
+        const cart = await Cart.findOne({ userId });
+        if (cart) {
+            cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+            cart.updatedAt = Date.now();
+            await cart.save();
+        }
+
+        // 2. Add to Wishlist
+        let wishlist = await Wishlist.findOne({ userId });
+        if (!wishlist) {
+            wishlist = new Wishlist({ userId, products: [] });
+        }
+        
+        const alreadyInWishlist = wishlist.products.some(item => item.productId.toString() === productId);
+        if (!alreadyInWishlist) {
+            wishlist.products.push({ productId });
+            await wishlist.save();
+        }
+
+        res.status(200).json({ message: "Item moved to wishlist", success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error moving item to wishlist", success: false });
+    }
+};
+
+
 module.exports = {
     getCart,
     addToCart,
     removeFromCart,
-    updateQuantity
+    updateQuantity,
+    moveToWishlist
 };

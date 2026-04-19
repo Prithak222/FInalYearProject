@@ -21,6 +21,8 @@ export function VendorRegister() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [agreed, setAgreed] = useState(false)
+
 
   const [formData, setFormData] = useState({
     shopName: '',
@@ -34,6 +36,12 @@ export function VendorRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (!agreed) {
+      setError('You must agree to the Terms and Conditions')
+      return
+    }
+
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
@@ -225,11 +233,33 @@ export function VendorRegister() {
                 required
               />
             </div>
+            {/* Terms and Conditions */}
+            <label className="flex items-start space-x-2 cursor-pointer mt-4 mb-2">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary mt-0.5"
+                required
+              />
+              <span className="text-sm text-muted-foreground">
+                I agree to the{' '}
+                <Link to="/terms-of-service" className="text-primary hover:underline font-medium">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy-policy" className="text-primary hover:underline font-medium">
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold disabled:opacity-50"
+              disabled={loading || !agreed}
+              className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold disabled:opacity-50 transition-all active:scale-95"
             >
+
               {loading ? 'Creating account...' : 'Create Vendor Account'}
             </button>
           </form>

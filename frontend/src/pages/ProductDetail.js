@@ -13,6 +13,7 @@ import {
   MessageCircleIcon,
   TruckIcon,
   RotateCcwIcon,
+  AlertCircle,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'

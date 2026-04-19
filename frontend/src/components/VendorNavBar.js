@@ -16,7 +16,8 @@ import { useAuth } from '../context/AuthContext'
 export function VendorNavbar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, unreadMessagesCount } = useAuth()
+
 
   const isActive = (path) => location.pathname === path
 
@@ -103,8 +104,14 @@ export function VendorNavbar() {
                   }`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span>{link.label}</span>
+                  <span className="flex-1">{link.label}</span>
+                  {link.label === 'Customer Chat' && unreadMessagesCount > 0 && (
+                    <span className="flex items-center justify-center w-5 h-5 text-[10px] font-black text-white bg-primary rounded-full">
+                      {unreadMessagesCount}
+                    </span>
+                  )}
                 </Link>
+
               )
             })}
           </nav>

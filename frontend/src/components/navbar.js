@@ -17,9 +17,10 @@ import {
 import { useAuth } from '../context/AuthContext'
 
 export function Navbar() {
+
   const location = useLocation()
   const navigate = useNavigate()
-  const { userRole, isLoggedIn, logout, user, cartCount } = useAuth()
+  const { userRole, isLoggedIn, logout, user, cartCount, unreadMessagesCount } = useAuth()
 
   const [showVendorMenu, setShowVendorMenu] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -235,8 +236,10 @@ export function Navbar() {
                             to="/messages"
                             icon={<MessageSquareIcon className="w-4 h-4" />}
                             label="Messages"
+                            unreadCount={unreadMessagesCount}
                             onClick={() => setShowVendorMenu(false)}
                           />
+
                         </div>
 
                         {/* Logout */}
@@ -297,15 +300,23 @@ export function Navbar() {
   )
 }
 
-function ProfileDropDownItem({ to, icon, label, onClick }) {
+function ProfileDropDownItem({ to, icon, label, unreadCount, onClick }) {
   return (
     <Link
       to={to}
       onClick={onClick}
-      className="flex items-center space-x-3 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
+      className="flex items-center justify-between px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors group"
     >
-      <span className="text-muted-foreground/70">{icon}</span>
-      <span>{label}</span>
+      <div className="flex items-center space-x-3">
+        <span className="text-muted-foreground/70 group-hover:text-primary transition-colors">{icon}</span>
+        <span>{label}</span>
+      </div>
+      {unreadCount > 0 && (
+        <span className="flex items-center justify-center w-5 h-5 text-[10px] font-black text-white bg-primary rounded-full ring-2 ring-white">
+          {unreadCount}
+        </span>
+      )}
     </Link>
   )
 }
+

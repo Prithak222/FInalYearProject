@@ -101,7 +101,8 @@ export function ChatWindow({ otherUser, productId }) {
                         )}
                     </div>
                     <div>
-                        <h3 className="font-black text-slate-900">{otherUser.name}</h3>
+                        <h3 className="font-black text-slate-900">{otherUser.shopName || otherUser.name}</h3>
+
                         <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Online</p>
                     </div>
                 </div>

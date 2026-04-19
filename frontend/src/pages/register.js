@@ -14,9 +14,17 @@ export function Register() {
     email: '',
     password: '',
   })
+  const [agreed, setAgreed] = useState(false)
+
 
 const handleSubmit = async (e) => {
   e.preventDefault()
+
+  if (!agreed) {
+    showToast('Please agree to the Terms of Service and Privacy Policy', 'error')
+    return
+  }
+
 
 
   try {
@@ -127,9 +135,12 @@ const handleSubmit = async (e) => {
             <label className="flex items-start space-x-2 cursor-pointer">
               <input
                 type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary mt-0.5"
                 required
               />
+
               <span className="text-sm text-muted-foreground">
                 I agree to the{' '}
                 <Link to="/terms-of-service" className="text-primary hover:underline">

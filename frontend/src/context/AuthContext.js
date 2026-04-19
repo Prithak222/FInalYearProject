@@ -10,6 +10,8 @@ export function AuthProvider({ children }) {
   })
   const [loading, setLoading] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
+
 
   const refreshCartCount = async () => {
     if (!user?.token) {
@@ -28,6 +30,28 @@ export function AuthProvider({ children }) {
       console.error('Cart refresh failed', err)
     }
   }
+
+
+
+
+  const refreshUnreadMessagesCount = async () => {
+    if (!user?.token) {
+      setUnreadMessagesCount(0)
+      return
+    }
+    try {
+      const res = await fetch('http://localhost:5000/api/messages/unread-count', {
+        headers: { Authorization: `Bearer ${user.token}` }
+      })
+      const data = await res.json()
+      if (typeof data.count === 'number') {
+        setUnreadMessagesCount(data.count)
+      }
+    } catch (err) {
+      console.error('Unread messages count refresh failed', err)
+    }
+  }
+
 
 
   // 💓 Heartbeat to check for suspension AND fetch user profile
@@ -60,10 +84,13 @@ export function AuthProvider({ children }) {
 
     fetchProfile()
     refreshCartCount()
+    refreshUnreadMessagesCount()
     const interval = setInterval(() => {
       fetchProfile()
       refreshCartCount()
+      refreshUnreadMessagesCount()
     }, 10000)
+
     return () => clearInterval(interval)
 
   }, [user?.token])
@@ -94,8 +121,11 @@ export function AuthProvider({ children }) {
         logout,
         loading,
         cartCount,
-        refreshCartCount
+        refreshCartCount,
+        unreadMessagesCount,
+        refreshUnreadMessagesCount
       }}
+
     >
       {children}
     </AuthContext.Provider>

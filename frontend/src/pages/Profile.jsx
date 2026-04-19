@@ -21,6 +21,9 @@ export function Profile() {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [orderCount, setOrderCount] = useState(null)
+  const [wishlistCount, setWishlistCount] = useState(null)
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
@@ -35,8 +38,41 @@ export function Profile() {
       </div>
     )
   }
+  
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = user?.token || sessionStorage.getItem('token')
+        
+        // Fetch Order Count
+        const orderRes = await fetch('http://localhost:5000/api/orders/my-orders', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (orderRes.ok) {
+          const orders = await orderRes.json()
+          setOrderCount(orders.length)
+        }
+
+        // Fetch Wishlist Count
+        const wishlistRes = await fetch('http://localhost:5000/api/wishlist', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (wishlistRes.ok) {
+          const items = await wishlistRes.json()
+          setWishlistCount(items.length)
+        }
+      } catch (err) {
+        console.error("Error fetching profile stats:", err)
+      }
+    }
+
+    if (user?.token) {
+        fetchStats()
+    }
+  }, [user?.token])
 
   const joinDate = new Date(user.createdAt).toLocaleDateString('en-US', {
+
     month: 'long',
     day: 'numeric',
     year: 'numeric'
@@ -184,12 +220,13 @@ export function Profile() {
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
                   <Link to="/my-orders" className="block w-full">
-                    <StatCard icon={<ShoppingBagIcon className="w-4 h-4 text-indigo-500" />} label="Orders" value="View All" />
+                    <StatCard icon={<ShoppingBagIcon className="w-4 h-4 text-indigo-500" />} label="Orders" value={orderCount !== null ? orderCount : '...'} />
                   </Link>
-                  <StatCard icon={<HeartIcon className="w-4 h-4 text-rose-500" />} label="Wishlist" value="0" />
-                  <StatCard icon={<ShieldCheckIcon className="w-4 h-4 text-emerald-500" />} label="Status" value="Verified" />
+                  <StatCard icon={<HeartIcon className="w-4 h-4 text-rose-500" />} label="Wishlist" value={wishlistCount !== null ? wishlistCount : '...'} />
+                  <StatCard icon={<ShieldCheckIcon className="w-4 h-4 text-emerald-500" />} label="Status" value={user.role === 'vendor' ? (user.verificationStatus || 'Verified') : 'Active'} />
                   <StatCard icon={<CalendarIcon className="w-4 h-4 text-amber-500" />} label="Year" value={new Date(user.createdAt).getFullYear()} />
                 </div>
+
               </div>
             </div>
           </div>

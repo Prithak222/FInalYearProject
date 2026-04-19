@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingBag, Package, ChevronRight, Calendar, Clock, MapPin, Search, XCircle, Trash2 } from 'lucide-react'
+import { ShoppingBag, Package, ChevronRight, Calendar, Clock, MapPin, Search, XCircle, Trash2, Star } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { RatingModal } from '../components/RatingModal'
 
 export function MyOrders() {
   const { isLoggedIn } = useAuth()
@@ -10,6 +11,8 @@ export function MyOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [reviewOrder, setReviewOrder] = useState(null)
+  const [reviewedOrders, setReviewedOrders] = useState(new Set())
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -26,12 +29,58 @@ export function MyOrders() {
       const data = await res.json()
       if (Array.isArray(data)) {
         setOrders(data)
+        // After fetching orders, check which ones have already been reviewed
+        checkReviews(data)
       }
     } catch (err) {
       console.error('Error fetching orders:', err)
       showToast('Failed to fetch orders', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const checkReviews = async (orderList) => {
+    const deliveredOrders = orderList.filter(o => o.orderStatus.toLowerCase() === 'delivered')
+    const token = sessionStorage.getItem('token')
+    
+    for (const order of deliveredOrders) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/reviews/check/${order._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = await res.json()
+        if (data.hasReviewed) {
+          setReviewedOrders(prev => new Set([...prev, order._id]))
+        }
+      } catch (err) {
+        console.error('Error checking review status:', err)
+      }
+    }
+  }
+
+  const handleReviewSubmit = async (reviewData) => {
+    const token = sessionStorage.getItem('token')
+    try {
+      const res = await fetch('http://localhost:5000/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(reviewData)
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast('Thank you for your rating!', 'success')
+        setReviewedOrders(prev => new Set([...prev, reviewData.orderId]))
+      } else {
+        showToast(data.message || 'Failed to submit rating', 'error')
+      }
+    } catch (err) {
+      console.error('Error submitting review:', err)
+      showToast('Server error during rating', 'error')
+      throw err // Re-throw for Modal handling
     }
   }
 
@@ -182,6 +231,23 @@ export function MyOrders() {
                         <span>View One Item</span>
                         <ChevronRight className="w-4 h-4" />
                       </Link>
+                      
+                      {order.orderStatus.toLowerCase() === 'delivered' ? (
+                        reviewedOrders.has(order._id) ? (
+                          <div className="w-full py-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 shadow-sm">
+                            <Star className="w-4 h-4 fill-emerald-600" />
+                            <span>Rated</span>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => setReviewOrder(order)}
+                            className="w-full py-3 bg-primary text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center space-x-2 shadow-sm active:scale-95"
+                          >
+                            <Star className="w-4 h-4 fill-white" />
+                            <span>Rate Vendor</span>
+                          </button>
+                        )
+                      ) : null}
 
                       {(order.orderStatus.toLowerCase() === 'pending' || order.orderStatus.toLowerCase() === 'processing') && (
                         <button 
@@ -211,6 +277,13 @@ export function MyOrders() {
           </div>
         )}
       </div>
+
+      <RatingModal
+        isOpen={!!reviewOrder}
+        order={reviewOrder}
+        onClose={() => setReviewOrder(null)}
+        onSubmit={handleReviewSubmit}
+      />
     </div>
   )
 }

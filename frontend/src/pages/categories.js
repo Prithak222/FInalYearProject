@@ -134,7 +134,7 @@ export function Categories() {
         <div className="flex flex-col md:flex-row gap-6">
 
           {/* Filters Sidebar */}
-          <div className="md:w-64 flex-shrink-0">
+          <div className="md:w-64 flex-shrink-0 md:sticky md:top-28 md:self-start z-10">
             <div className={`${showFilters ? 'block' : 'hidden'} md:block`}>
               <FilterSidebar
                 isOpen={true}

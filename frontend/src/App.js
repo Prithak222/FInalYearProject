@@ -8,6 +8,7 @@ import { Home } from './pages/home'
 import { Login } from './pages/login'
 import { Register } from './pages/register'
 import { Categories } from './pages/categories'
+import { AboutUs } from './pages/AboutUs'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SocketProvider } from './context/SocketContext'
 import { ForgotPassword } from './pages/ForgotPassword'
@@ -112,6 +113,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/about-us" element={<AboutUs />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/shop/:id" element={<ShopDetail />} />
           <Route

@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../Models/user");
 const crypto = require("crypto");
 const ProductModel = require("../Models/products");
+const OrderModel = require("../Models/Order");
 const transporter = require("../Utils/emailConfig");
 
 const signup = async (req, res) => {
@@ -19,8 +20,10 @@ const signup = async (req, res) => {
     res.status(201)
       .json({
         message: "User registered successfully",
-        success: true
+        success: true,
+        _id: userModel._id
       })
+
 
   } catch (err) {
     res.status(500).
@@ -68,8 +71,10 @@ const login = async (req, res) => {
       token,          // unified token for all roles
       email: user.email,
       name: user.name,
-      userType: user.role // admin, vendor, customer
+      userType: user.role, // admin, vendor, customer
+      _id: user._id
     });
+
 
   } catch (err) {
     console.error(err);
@@ -133,7 +138,14 @@ const vendorLogin = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({ token });
+    res.json({ 
+      token,
+      _id: user._id,
+      name: user.name,
+      role: user.role,
+      success: true
+    });
+
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -635,6 +647,35 @@ const rejectVendorVerification = async (req, res) => {
   }
 };
 
+const getPublicStats = async (req, res) => {
+  try {
+    const activeUsers = await UserModel.countDocuments({ role: 'customer' });
+    const verifiedVendors = await UserModel.countDocuments({ role: 'vendor', isVendorApproved: true });
+    
+    // Calculate items sold from completed orders
+    const itemsSoldData = await OrderModel.aggregate([
+      { $match: { paymentStatus: 'Completed' } },
+      { $unwind: '$items' },
+      { $group: { _id: null, totalSold: { $sum: '$items.quantity' } } }
+    ]);
+    
+    const itemsSold = itemsSoldData.length > 0 ? itemsSoldData[0].totalSold : 0;
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        activeUsers: activeUsers > 1000 ? `${(activeUsers / 1000).toFixed(1)}K+` : `${activeUsers}+`,
+        itemsSold: itemsSold > 1000 ? `${(itemsSold / 1000).toFixed(1)}K+` : `${itemsSold}+`,
+        verifiedVendors: verifiedVendors > 100 ? `${verifiedVendors}+` : `${verifiedVendors}`,
+        userSatisfaction: "4.9/5"
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching public stats:", err);
+    res.status(500).json({ message: "Internal Server Error", success: false });
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -660,4 +701,5 @@ module.exports = {
   resetPassword,
   submitVendorVerification,
   rejectVendorVerification,
+  getPublicStats,
 };
