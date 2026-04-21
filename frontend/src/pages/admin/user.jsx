@@ -125,9 +125,9 @@ export function Users() {
 
         {/* Users Table */}
         <div className="bg-white rounded-lg border border-border overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full">
-              <thead className="bg-muted border-b border-border">
+              <thead className="bg-muted border-b border-border sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase">
                     User

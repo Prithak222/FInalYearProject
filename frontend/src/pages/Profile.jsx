@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
@@ -13,11 +13,15 @@ import {
   Edit2Icon,
   SaveIcon,
   XIcon,
-  CameraIcon
+  CameraIcon,
+  AlertCircleIcon,
+  MessageSquareIcon,
+  SendIcon
 } from 'lucide-react'
 
 export function Profile() {
   const { user, login } = useAuth()
+  const fileInputRef = useRef(null)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
@@ -30,6 +34,11 @@ export function Profile() {
     address: user?.address || '',
     image: user?.image || ''
   })
+
+  // Report Problem State
+  const [reportData, setReportData] = useState({ subject: '', description: '' })
+  const [reportLoading, setReportLoading] = useState(false)
+  const [reportMessage, setReportMessage] = useState({ type: '', text: '' })
 
   if (!user) {
     return (
@@ -89,6 +98,22 @@ export function Profile() {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Image size should be less than 5MB' })
+        return
+      }
+      
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleSave = async () => {
     setLoading(true)
@@ -119,6 +144,39 @@ export function Profile() {
     }
   }
 
+  const handleReportSubmit = async (e) => {
+    e.preventDefault()
+    if (!reportData.subject || !reportData.description) {
+        setReportMessage({ type: 'error', text: 'Please fill in all fields' })
+        return
+    }
+
+    setReportLoading(true)
+    setReportMessage({ type: '', text: '' })
+    try {
+        const res = await fetch('http://localhost:5000/api/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${user.token}`
+            },
+            body: JSON.stringify(reportData)
+        })
+
+        const data = await res.json()
+        if (res.ok) {
+            setReportMessage({ type: 'success', text: 'Problem reported successfully! Admin will review it.' })
+            setReportData({ subject: '', description: '' })
+        } else {
+            setReportMessage({ type: 'error', text: data.message || 'Failed to submit report' })
+        }
+    } catch (err) {
+        setReportMessage({ type: 'error', text: 'Something went wrong. Please try again.' })
+    } finally {
+        setReportLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20 pt-24">
       {/* Hero Banner */}
@@ -140,19 +198,24 @@ export function Profile() {
               <div className="relative group">
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-primary/5 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]">
                   {isEditing ? (
-                    <div className="w-full h-full relative">
-                      <img src={formData.image || user.image || 'https://via.placeholder.com/150'} alt="Preview" className="w-full h-full object-cover opacity-50" />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                        <CameraIcon className="w-8 h-8 text-primary mb-2" />
-                        <input
-                          type="text"
-                          name="image"
-                          value={formData.image}
-                          onChange={handleChange}
-                          placeholder="Image URL"
-                          className="w-full text-[10px] bg-white/80 border border-primary/20 rounded px-1 py-1 focus:outline-none focus:ring-1 ring-primary"
-                        />
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full h-full relative cursor-pointer group/upload"
+                    >
+                      <img src={formData.image || user.image || 'https://via.placeholder.com/150'} alt="Preview" className="w-full h-full object-cover group-hover/upload:opacity-50 transition-opacity" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 opacity-0 group-hover/upload:opacity-100 transition-opacity">
+                        <CameraIcon className="w-8 h-8 text-white mb-2" />
+                        <span className="text-[10px] bg-black/60 text-white font-bold px-2 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm shadow-xl">
+                          Select Photo
+                        </span>
                       </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        className="hidden"
+                      />
                     </div>
                   ) : user.image ? (
                     <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
@@ -271,6 +334,67 @@ export function Profile() {
                 </div>
               </div>
 
+            </div>
+
+            {/* Report a Problem Section */}
+            <div className="mt-16 pt-10 border-t border-slate-100">
+                <div className="flex flex-col md:flex-row gap-10">
+                    <div className="md:w-1/3">
+                        <div className="p-3 bg-red-50 rounded-2xl text-red-600 w-12 h-12 flex items-center justify-center mb-4">
+                            <AlertCircleIcon className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-900 mb-2">Report a Problem</h3>
+                        <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                            Facing any issues with an order, a vendor, or the platform? Let our admin team know, and we'll resolve it as soon as possible.
+                        </p>
+                    </div>
+
+                    <div className="flex-1">
+                        <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 shadow-inner">
+                            {reportMessage.text && (
+                                <div className={`p-4 rounded-xl text-xs font-bold mb-6 text-center shadow-sm ${reportMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                    {reportMessage.text}
+                                </div>
+                            )}
+                            <div className="space-y-4 text-left">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block">Subject</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. Broken item received / Payment issue" 
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ring-red-500/10 font-medium"
+                                        value={reportData.subject}
+                                        onChange={(e) => setReportData({...reportData, subject: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block">Description</label>
+                                    <textarea 
+                                        rows="4"
+                                        placeholder="Please provide as much detail as possible..." 
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ring-red-500/10 font-medium resize-none text-slate-600 leading-relaxed"
+                                        value={reportData.description}
+                                        onChange={(e) => setReportData({...reportData, description: e.target.value})}
+                                    />
+                                </div>
+                                <button 
+                                    onClick={handleReportSubmit}
+                                    disabled={reportLoading}
+                                    className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-600 transition-all active:scale-[0.98] disabled:opacity-50 mt-2 flex items-center justify-center gap-3 shadow-lg"
+                                >
+                                    {reportLoading ? (
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <SendIcon className="w-4 h-4" />
+                                            Submit Report
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
           </div>
 

@@ -193,7 +193,7 @@ const getPendingVendors = async (req, res) => {
   const vendors = await UserModel.find({
     role: 'vendor',
     isVendorApproved: false
-  }).select('-password')
+  }).sort({ createdAt: -1 }).select('-password')
 
   res.json(vendors)
 }
@@ -355,7 +355,7 @@ const getAdminStats = async (req, res) => {
 
 const getAllVendors = async (req, res) => {
   try {
-    const vendors = await UserModel.find({ role: "vendor" }).select("-password");
+    const vendors = await UserModel.find({ role: "vendor" }).sort({ createdAt: -1 }).select("-password");
     res.json(vendors);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -376,7 +376,7 @@ const getVendorStats = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await UserModel.find({ role: "customer" }).select("-password");
+    const users = await UserModel.find({ role: "customer" }).sort({ createdAt: -1 }).select("-password");
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: "Server error" });

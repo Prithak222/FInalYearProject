@@ -38,6 +38,7 @@ app.use("/api/payments", require("./Routes/paymentRoutes"));
 app.use("/api/messages", require("./Routes/messageRoutes"));
 app.use("/api/payouts", require("./Routes/payoutRoutes"));
 app.use("/api/reviews", require("./Routes/reviewRoutes"));
+app.use("/api/reports", require("./Routes/reportRoutes"));
 
 // Socket.IO Logic
 io.on('connection', (socket) => {

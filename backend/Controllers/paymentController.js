@@ -53,7 +53,8 @@ const initializeEsewa = async (req, res) => {
                 vendorEarning,
                 paymentStatus: 'Pending',
                 orderStatus: 'Pending',
-                transactionUuid
+                transactionUuid,
+                paymentMethod: 'eSewa'
             });
 
             const savedOrder = await newOrder.save();
@@ -88,6 +89,99 @@ const initializeEsewa = async (req, res) => {
     } catch (err) {
         console.error("Error initializing payment:", err);
         res.status(500).json({ message: "Server error initializing payment", success: false });
+    }
+};
+
+const initializeCOD = async (req, res) => {
+    try {
+        const { shippingInfo, items, totalAmount } = req.body;
+        const userId = req.user._id;
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({ message: "No items in order", success: false });
+        }
+
+        // Generate a unique transaction UUID for this COD session
+        const transactionUuid = `COD-${Date.now()}-${userId}`;
+
+        // Group items by vendorId
+        const vendorGroups = items.reduce((groups, item) => {
+            const vId = item.vendorId?._id || item.vendorId;
+            const vIdStr = vId.toString();
+            
+            if (!groups[vIdStr]) {
+                groups[vIdStr] = [];
+            }
+            groups[vIdStr].push(item);
+            return groups;
+        }, {});
+
+        const orderIds = [];
+        
+        // Create an order for each vendor
+        for (const vIdStr in vendorGroups) {
+            const vendorItems = vendorGroups[vIdStr];
+            const vendorTotal = vendorItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Calculate commission (5%) and vendor earning (95%)
+            const commission = vendorTotal * 0.05;
+            const vendorEarning = vendorTotal - commission;
+
+            const newOrder = new Order({
+                userId,
+                vendorId: vIdStr,
+                items: vendorItems.map(item => ({
+                    ...item,
+                    vendorId: vIdStr
+                })),
+                shippingInfo,
+                totalAmount: vendorTotal,
+                commission,
+                vendorEarning,
+                paymentStatus: 'Pending',
+                orderStatus: 'Pending',
+                transactionUuid,
+                paymentMethod: 'COD'
+            });
+
+            const savedOrder = await newOrder.save();
+            orderIds.push(savedOrder._id);
+
+            // Mark products as SOLD and set quantity to 0 for COD immediately
+            for (const item of vendorItems) {
+                await Product.findByIdAndUpdate(item.productId, {
+                    status: 'sold',
+                    quantity: 0
+                });
+            }
+        }
+
+        // Clear user's cart
+        await Cart.findOneAndDelete({ userId });
+
+        // Save a Pending payment record for the COD order
+        const newPaymentRecord = new Payment({
+            userId,
+            orderIds,
+            transactionUuid,
+            transactionCode: 'COD-ORDER', // Use a placeholder for transaction code
+            amount: totalAmount,
+            status: 'Pending',
+            paymentMethod: 'COD'
+        });
+
+        await newPaymentRecord.save();
+        console.log(`Successfully saved COD order and pending payment for transaction ${transactionUuid}`);
+
+        res.status(201).json({
+            message: "COD Order placed successfully",
+            success: true,
+            transactionUuid,
+            orderIds
+        });
+    } catch (err) {
+        console.error("Error initializing COD order:", err);
+        res.status(500).json({ message: "Server error initializing COD order", success: false });
     }
 };
 
@@ -206,6 +300,7 @@ const getPaymentHistory = async (req, res) => {
 
 module.exports = {
     initializeEsewa,
+    initializeCOD,
     completePayment,
     failedPayment,
     getPaymentHistory

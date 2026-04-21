@@ -56,7 +56,7 @@ export function Footer() {
             <h4 className="text-white font-bold mb-6 tracking-tight">Support</h4>
             <ul className="space-y-4">
               <FooterLink to="/about-us" label="About Us" />
-              <FooterLink to="#" label="Contact Us" />
+              <FooterLink to="/contact-us" label="Contact Us" />
               <FooterLink to="#" label="Feedback" />
             </ul>
           </div>

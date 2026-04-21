@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { HeartIcon, Trash2Icon, PackageIcon, ArrowLeftIcon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 export function Wishlist() {
   const { isLoggedIn } = useAuth()
+  const { showToast } = useToast()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -28,13 +30,21 @@ export function Wishlist() {
   const handleRemove = async (productId) => {
     const token = sessionStorage.getItem('token')
     try {
-      await fetch(`http://localhost:5000/api/wishlist/remove/${productId}`, {
+      const res = await fetch(`http://localhost:5000/api/wishlist/remove/${productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })
-      setItems(items.filter(item => item.productId?._id !== productId))
+      const data = await res.json()
+      
+      if (data.success) {
+        setItems(items.filter(item => item.productId?._id !== productId))
+        showToast(data.message || "Item removed from wishlist", "success")
+      } else {
+        showToast(data.message || "Failed to remove item", "error")
+      }
     } catch (err) {
       console.error(err)
+      showToast("Error removing item", "error")
     }
   }
 

@@ -66,6 +66,11 @@ const orderSchema = new Schema({
     },
     esewaTransactionCode: {
         type: String
+    },
+    paymentMethod: {
+        type: String,
+        enum: ['eSewa', 'COD'],
+        default: 'eSewa'
     }
 }, { timestamps: true });
 

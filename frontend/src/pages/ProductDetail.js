@@ -97,7 +97,7 @@ export function ProductDetail() {
       })
       const data = await res.json()
       setIsWishlisted(data.wishlisted)
-      showToast(data.wishlisted ? "Added to Wishlist!" : "Removed from Wishlist!", "success")
+      showToast(data.message || (data.wishlisted ? "Item added to Wishlist!" : "Item removed from Wishlist!"), "success")
 
     } catch (err) {
       console.error(err)

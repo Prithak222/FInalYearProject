@@ -12,6 +12,7 @@ export function Checkout() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('esewa')
   
   const [formData, setFormData] = useState({
     name: '',
@@ -69,35 +70,56 @@ export function Checkout() {
     }
 
     try {
-      // Call eSewa initialization endpoint
-      const res = await fetch('http://localhost:5000/api/payments/initialize-esewa', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(orderData)
-      })
+      if (paymentMethod === 'esewa') {
+        // Call eSewa initialization endpoint
+        const res = await fetch('http://localhost:5000/api/payments/initialize-esewa', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(orderData)
+        })
 
-      const data = await res.json()
-      if (data.success) {
-        // Create a hidden form and submit it to eSewa
-        const form = document.createElement('form');
-        form.setAttribute('method', 'POST');
-        form.setAttribute('action', data.gatewayUrl);
+        const data = await res.json()
+        if (data.success) {
+          // Create a hidden form and submit it to eSewa
+          const form = document.createElement('form');
+          form.setAttribute('method', 'POST');
+          form.setAttribute('action', data.gatewayUrl);
 
-        for (const key in data.esewaData) {
-          const hiddenField = document.createElement('input');
-          hiddenField.setAttribute('type', 'hidden');
-          hiddenField.setAttribute('name', key);
-          hiddenField.setAttribute('value', data.esewaData[key]);
-          form.appendChild(hiddenField);
+          for (const key in data.esewaData) {
+            const hiddenField = document.createElement('input');
+            hiddenField.setAttribute('type', 'hidden');
+            hiddenField.setAttribute('name', key);
+            hiddenField.setAttribute('value', data.esewaData[key]);
+            form.appendChild(hiddenField);
+          }
+
+          document.body.appendChild(form);
+          form.submit();
+        } else {
+          showToast(data.message || 'Failed to initialize payment', 'error')
         }
-
-        document.body.appendChild(form);
-        form.submit();
       } else {
-        showToast(data.message || 'Failed to initialize payment', 'error')
+        // COD logic
+        const res = await fetch('http://localhost:5000/api/payments/initialize-cod', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(orderData)
+        })
+
+        const data = await res.json()
+        if (data.success) {
+          showToast('Order placed successfully!', 'success')
+          refreshCartCount()
+          navigate(`/order-success?transactionId=${data.transactionUuid}`)
+        } else {
+          showToast(data.message || 'Failed to place order', 'error')
+        }
       }
     } catch (err) {
       console.error(err)
@@ -190,11 +212,35 @@ export function Checkout() {
                   <h2 className="text-xl font-bold text-slate-800">Payment Method</h2>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
-                  <label className="flex items-center p-4 bg-slate-50 rounded-xl border border-primary/20 cursor-pointer hover:bg-slate-100 transition-all">
-                    <input type="radio" name="paymentMethod" value="esewa" checked readOnly className="w-5 h-5 text-primary focus:ring-primary" />
+                  <label className={`flex items-center p-4 rounded-xl border cursor-pointer hover:bg-slate-50 transition-all ${paymentMethod === 'esewa' ? 'bg-blue-50/50 border-primary' : 'bg-white border-slate-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="paymentMethod" 
+                      value="esewa" 
+                      checked={paymentMethod === 'esewa'} 
+                      onChange={() => setPaymentMethod('esewa')}
+                      className="w-5 h-5 text-primary focus:ring-primary" 
+                    />
                     <div className="ml-4 flex items-center">
                       <img src="https://esewa.com.np/common/images/esewa-logo.png" alt="eSewa" className="h-8 mr-2" />
                       <span className="font-bold text-slate-800">eSewa Mobile Wallet</span>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-center p-4 rounded-xl border cursor-pointer hover:bg-slate-50 transition-all ${paymentMethod === 'cod' ? 'bg-blue-50/50 border-primary' : 'bg-white border-slate-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="paymentMethod" 
+                      value="cod" 
+                      checked={paymentMethod === 'cod'} 
+                      onChange={() => setPaymentMethod('cod')}
+                      className="w-5 h-5 text-primary focus:ring-primary" 
+                    />
+                    <div className="ml-4 flex items-center">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                        <ShoppingBag className="w-4 h-4 text-green-600" />
+                      </div>
+                      <span className="font-bold text-slate-800">Cash on Delivery</span>
                     </div>
                   </label>
                 </div>
@@ -210,7 +256,7 @@ export function Checkout() {
                 ) : (
                   <>
                     <ShieldCheck className="w-5 h-5" />
-                    <span>Pay with eSewa (Rs. {totalPrice})</span>
+                    <span>{paymentMethod === 'esewa' ? 'Pay with eSewa' : 'Place Order (COD)'} (Rs. {totalPrice})</span>
                   </>
                 )}
               </button>

@@ -18,7 +18,7 @@ const paymentSchema = new Schema({
     },
     transactionCode: {
         type: String,
-        required: true
+        required: function() { return this.paymentMethod !== 'COD'; }
     },
     amount: {
         type: Number,
@@ -31,6 +31,7 @@ const paymentSchema = new Schema({
     },
     paymentMethod: {
         type: String,
+        enum: ['eSewa', 'COD'],
         default: 'eSewa'
     }
 }, { timestamps: true });

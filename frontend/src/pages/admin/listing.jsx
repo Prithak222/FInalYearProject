@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import {
   SearchIcon,
-  FilterIcon,
-  EyeIcon,
-  CheckCircleIcon,
-  XCircleIcon,
   AlertTriangleIcon,
   PackageIcon,
-  MoreVerticalIcon,
   Trash2Icon,
 } from 'lucide-react'
+import { useToast } from '../../context/ToastContext'
 
 export default function Listings() {
+  const { showToast } = useToast()
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -38,24 +35,22 @@ export default function Listings() {
     }
   }
 
-  const handleUpdateStatus = async (id, newStatus) => {
+  const handleDelete = async (id, title) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`)) return
     const token = sessionStorage.getItem('token')
     try {
-      const res = await fetch(`http://localhost:5000/api/products/admin/status/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
+      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       })
       if (res.ok) {
-        setListings(prev => prev.map(item => 
-          item._id === id ? { ...item, status: newStatus } : item
-        ))
+        setListings(prev => prev.filter(item => item._id !== id))
+        showToast('Product deleted successfully!', 'success')
+      } else {
+        showToast('Failed to delete the product. Please try again.', 'error')
       }
     } catch (err) {
-      console.error('Error updating status:', err)
+      console.error('Error deleting product:', err)
     }
   }
 
@@ -207,24 +202,13 @@ export default function Listings() {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex justify-end space-x-2">
-                        {item.status !== 'active' && (
-                          <button 
-                            onClick={() => handleUpdateStatus(item._id, 'active')}
-                            className="p-2 bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all shadow-sm group/btn" 
-                            title="Approve"
-                          >
-                            <CheckCircleIcon className="w-5 h-5" />
-                          </button>
-                        )}
-                        {item.status !== 'flagged' && (
-                          <button 
-                            onClick={() => handleUpdateStatus(item._id, 'flagged')}
-                            className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm group/btn" 
-                            title="Flag Product"
-                          >
-                            <AlertTriangleIcon className="w-5 h-5" />
-                          </button>
-                        )}
+                        <button 
+                          onClick={() => handleDelete(item._id, item.title)}
+                          className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm" 
+                          title="Delete Product"
+                        >
+                          <Trash2Icon className="w-5 h-5" />
+                        </button>
                       </div>
                     </td>
                   </tr>

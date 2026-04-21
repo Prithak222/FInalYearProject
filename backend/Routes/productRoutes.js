@@ -164,16 +164,19 @@ router.put('/:id', ensureAuthenticated, vendorApprovedOnly, async (req, res) => 
   }
 });
 
-// 🗑️ Delete a product (Vendor only, owner only)
-router.delete('/:id', ensureAuthenticated, vendorApprovedOnly, async (req, res) => {
+// 🗑️ Delete a product (Vendor: owner only | Admin: any product)
+router.delete('/:id', ensureAuthenticated, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found', success: false });
     }
 
-    // Check ownership
-    if (product.vendor.toString() !== req.user._id.toString()) {
+    // Allow admin to delete any product; vendors can only delete their own
+    const isAdmin = req.user.role === 'admin';
+    const isOwner = product.vendor.toString() === req.user._id.toString();
+    
+    if (!isAdmin && !isOwner) {
       return res.status(403).json({ message: 'Unauthorized: You can only delete your own products', success: false });
     }
 

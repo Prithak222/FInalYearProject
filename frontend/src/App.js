@@ -9,6 +9,7 @@ import { Login } from './pages/login'
 import { Register } from './pages/register'
 import { Categories } from './pages/categories'
 import { AboutUs } from './pages/AboutUs'
+import { ContactUs } from './pages/ContactUs'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SocketProvider } from './context/SocketContext'
 import { ForgotPassword } from './pages/ForgotPassword'
@@ -114,6 +115,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/shop/:id" element={<ShopDetail />} />
           <Route

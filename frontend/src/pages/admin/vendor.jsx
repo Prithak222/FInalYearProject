@@ -117,9 +117,9 @@ export function Vendors() {
 
         {/* Vendors Table */}
         <div className="bg-white border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full">
-              <thead className="bg-muted border-b">
+              <thead className="bg-muted border-b sticky top-0 z-10">
                 <tr>
                   <TableHead>Shop</TableHead>
                   <TableHead>Owner</TableHead>
